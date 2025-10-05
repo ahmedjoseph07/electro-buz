@@ -14,13 +14,13 @@ export default function Navbar() {
         { title: 'Home', href: '/' },
         { title: 'Products', href: '/products' },
         { title: 'Complain', href: '/complain' },
-        { title: 'Contact Us', href: '/contact-us' },
+        { title: 'Contacts', href: '/contact-us' },
     ];
 
     return (
         <nav className="w-full border-b-1 px-6 py-4 flex items-center justify-between">
             {/* Logo */}
-            <Link href="/" className="text-2xl font-bold hover:scale-105 duration-300 transition-all">
+            <Link href="/" className="text-2xl cursor-pointer font-bold hover:scale-105 duration-300 transition-all">
                 <Image
                     src="/logo.png"
                     alt="electro-buz"
@@ -44,7 +44,7 @@ export default function Navbar() {
                     </Link>
                 ))}
                 <Button className='rounded-full'><ShoppingCart />Cart</Button>
-                <Button className="bg-blue-600 text-white hover:bg-blue-700">
+                <Button variant="neutral">
                     <LogIn /> Login
                 </Button>
             </div>
