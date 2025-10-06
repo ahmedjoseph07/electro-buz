@@ -35,7 +35,7 @@ const WhyChooseUs = () => {
 
             <p className="max-w-3xl mx-6 text-center text-gray-500 md:mx-auto">
                 At ElectroBuz⚡, we go beyond selling electronics — we empower innovators.
-                Whether you're a student, hobbyist, or engineer, we provide top-quality
+                Whether you are a student, hobbyist, or engineer, we provide top-quality
                 robotics and IoT components to make your ideas a reality.
             </p>
 
