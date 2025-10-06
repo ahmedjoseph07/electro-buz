@@ -28,12 +28,18 @@ const WhyChooseUs = () => {
     ];
 
     return (
-        <section className="py-10 border-b bg-gray-50">
-            <h2 className="text-3xl font-bold text-center mb-10">
-                Why Choose <span className="text-cyan-500">ElectroBuz⚡</span>?
+        <section className="py-10 bg-gray-50 space-y-6">
+            <h2 className="text-3xl font-bold text-center ">
+                Why <span className="text-cyan-500">ElectroBuz⚡</span>?
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 px-6">
+            <p className="max-w-3xl mx-6 text-center text-gray-500 md:mx-auto">
+                At ElectroBuz⚡, we go beyond selling electronics — we empower innovators.
+                Whether you're a student, hobbyist, or engineer, we provide top-quality
+                robotics and IoT components to make your ideas a reality.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 px-6 max-w-7xl mx-auto">
                 {features.map((item) => (
                     <Card
                         key={item.title}

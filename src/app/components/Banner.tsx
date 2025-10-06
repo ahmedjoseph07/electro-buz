@@ -1,19 +1,19 @@
 "use client"
 import { Button } from "@/components/ui/button";
+import { Info, ShoppingBag } from "lucide-react";
 import Image from "next/image";
 import React from 'react';
 import { Typewriter } from "react-simple-typewriter";
 
 const Banner = () => {
     return (
-        <section className="w-full py-10 bg-gray-50">
-            <div className="flex flex-col-reverse md:flex-row justify-center gap-4 px-6 py-4">
-
+        <section className="mt-20 py-10 bg-gray-50">
+            <div className="flex flex-col-reverse md:flex-row lg:gap-20 justify-center gap-4 px-6 py-4">
                 {/* Banner Details */}
-                <div className="space-y-6">
+                <div className="space-y-6 text-center">
                     {/* Heading */}
-                    <h1 className="text-3xl md:text-5xl font-bold mb-4">
-                        Welcome to <span className="font-extrabold text-cyan-500">ElectroBuz</span>⚡
+                    <h1 className="text-3xl lg:text-5xl font-bold mb-4">
+                        Welcome to <span className="font-extrabold text-cyan-500 animate-pulse hover:animate-none">ElectroBuz</span>⚡
                     </h1>
 
                     {/* Description */}
@@ -38,11 +38,11 @@ const Banner = () => {
                     </p>
 
                     {/* Buttons */}
-                    <div className="flex gap-4">
+                    <div className="flex gap-4 items-center justify-center">
                         <Button>
-                            Shop Now
+                           <ShoppingBag/> Shop Now
                         </Button>
-                        <Button variant="neutral">Learn More</Button>
+                        <Button variant="neutral"> <Info/> Learn More</Button>
                     </div>
                 </div>
 
@@ -53,9 +53,10 @@ const Banner = () => {
                         alt="ElectroBuz Banner"
                         width={300}
                         height={300}
-                        className="mx-auto rounded-lg object-cover"
+                        className="mx-auto rounded-lg object-cover shadow-lg animate-pulse hover:animate-none"
                         priority
                     />
+
                 </div>
 
             </div>

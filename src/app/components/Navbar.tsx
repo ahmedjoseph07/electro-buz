@@ -18,68 +18,71 @@ export default function Navbar() {
     ];
 
     return (
-        <nav className="w-full border-b-1 px-6 py-4 flex items-center justify-between">
-            {/* Logo */}
-            <Link href="/" className="text-2xl cursor-pointer font-bold hover:scale-105 duration-300 transition-all">
-                <Image
-                    src="/logo.png"
-                    alt="electro-buz"
-                    width={250}
-                    height={300}
-                    priority
-                    className="object-cover rounded-lg"
-                />
-            </Link>
+        <section className='fixed top-0 left-0 border-cyan-300 border-b-1 w-full px-4 z-50 backdrop-blur-xl '>
+            <nav className="max-w-7xl mx-auto py-4 gap-6 md:gap-4 flex items-center justify-between">
+                {/* Logo */}
+                <Link href="/" className="text-2xl font-bold cursor-pointer">
+                    <Image
+                        src="/logo.png"
+                        alt="electro-buz"
+                        width={250}
+                        height={300}
+                        priority
+                        className="object-cover rounded-lg"
+                    />
+                </Link>
 
-            {/* Desktop Menu */}
-            <div className="hidden md:flex gap-6 items-center">
-                {navLinks.map((link) => (
-                    <Link
-                        key={link.href}
-                        href={link.href}
-                        className="relative font-medium transition-all duration-300 hover:scale-105
+                {/* Desktop Menu */}
+                <div className="hidden md:flex gap-6 items-center">
+                    {navLinks.map((link) => (
+                        <Link
+                            key={link.href}
+                            href={link.href}
+                            className="relative font-medium transition-all duration-300 hover:scale-105
                after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-black after:transition-all after:duration-500 hover:after:w-full"
-                    >
-                        {link.title}
-                    </Link>
-                ))}
-                <Button className='rounded-full'><ShoppingCart />Cart</Button>
-                <Button variant="neutral">
-                    <LogIn /> Login
-                </Button>
-            </div>
+                        >
+                            {link.title}
+                        </Link>
+                    ))}
+                    <Button className='rounded-full'><ShoppingCart />Cart</Button>
+                    <Button variant="neutral">
+                        <LogIn /> Login
+                    </Button>
+                </div>
 
-            {/* Mobile Menu */}
-            <div className="md:hidden">
-                <Sheet open={isOpen} onOpenChange={setIsOpen}>
-                    <SheetTrigger asChild>
-                        <Button variant="noShadow" className="mt-3">
-                            <MenuSquare />
-                        </Button>
-                    </SheetTrigger>
-                    <SheetContent side="right" className="w-64 p-6">
-                        <div className="border-b-2 mb-4">
-                            <SheetTitle className="font-extrabold">Menu</SheetTitle>
-                        </div>
-                        <div className="flex flex-col gap-4">
-                            {navLinks.map((link) => (
-                                <Link
-                                    key={link.href}
-                                    href={link.href}
-                                    className="font-semibold hover:text-blue-600"
-                                    onClick={() => setIsOpen(false)}
-                                >
-                                    {link.title}
-                                </Link>
-                            ))}
-                            <Button><ShoppingCart /> Cart</Button>
-                            <Button className="bg-blue-600 text-white hover:bg-blue-700">
-                                <LogIn /> Login
+                {/* Mobile Menu */}
+                <div className="md:hidden">
+                    <Sheet open={isOpen} onOpenChange={setIsOpen}>
+                        <SheetTrigger asChild>
+                            <Button variant="noShadow" className="mt-3">
+                                <MenuSquare />
                             </Button>
-                        </div>
-                    </SheetContent>
-                </Sheet>
-            </div>
-        </nav>
+                        </SheetTrigger>
+                        <SheetContent side="right" className="w-64 p-6">
+                            <div className="border-b-2 mb-4">
+                                <SheetTitle className="font-extrabold">Menu</SheetTitle>
+                            </div>
+                            <div className="flex flex-col gap-4">
+                                {navLinks.map((link) => (
+                                    <Link
+                                        key={link.href}
+                                        href={link.href}
+                                        className="font-semibold hover:text-blue-600"
+                                        onClick={() => setIsOpen(false)}
+                                    >
+                                        {link.title}
+                                    </Link>
+                                ))}
+                                <Button><ShoppingCart /> Cart</Button>
+                                <Button className="bg-blue-600 text-white hover:bg-blue-700">
+                                    <LogIn /> Login
+                                </Button>
+                            </div>
+                        </SheetContent>
+                    </Sheet>
+                </div>
+            </nav>
+        </section>
+
     );
 }
