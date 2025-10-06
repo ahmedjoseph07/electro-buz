@@ -18,7 +18,7 @@ export default function Navbar() {
     ];
 
     return (
-        <section className='fixed top-0 left-0 border-cyan-300 border-b-1 w-full px-4 z-50 backdrop-blur-xl '>
+        <section className='fixed top-0 left-0 bg-white border-cyan-300 border-b-1 w-full px-4 z-50'>
             <nav className="max-w-7xl mx-auto py-4 gap-6 md:gap-4 flex items-center justify-between">
                 {/* Logo */}
                 <Link href="/" className="text-2xl font-bold cursor-pointer">
@@ -74,7 +74,7 @@ export default function Navbar() {
                                     </Link>
                                 ))}
                                 <Button><ShoppingCart /> Cart</Button>
-                                <Button className="bg-blue-600 text-white hover:bg-blue-700">
+                                <Button variant="neutral">
                                     <LogIn /> Login
                                 </Button>
                             </div>
