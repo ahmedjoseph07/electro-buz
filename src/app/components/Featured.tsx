@@ -50,7 +50,7 @@ const Featured = () => {
     };
 
     return (
-        <section className="py-14 bg-gray-50 border-b">
+        <section className="py-14 bg-gray-50 ">
             <h2 className="text-3xl font-bold text-center mb-4">
                 Featured <span className="text-cyan-500">Products ⚡</span>
             </h2>
