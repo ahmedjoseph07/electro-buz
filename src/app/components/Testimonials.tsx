@@ -1,6 +1,7 @@
 "use client";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Quote, QuoteIcon } from "lucide-react";
+import { Quote } from "lucide-react";
+import Image from "next/image";
 
 const testimonials = [
     {
@@ -46,7 +47,9 @@ const Testimonials = () => {
                     >
                         <CardHeader className="flex flex-col items-center space-y-2">
                             <div className="flex justify-center mb-2">
-                                <img
+                                <Image
+                                    width={300}
+                                    height={300}
                                     src={t.image}
                                     alt={t.name}
                                     className="w-20 h-20 rounded-full object-cover border-2 border-cyan-600"
