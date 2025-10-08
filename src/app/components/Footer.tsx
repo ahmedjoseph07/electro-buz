@@ -1,5 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Mail, MapPin, Phone, Facebook, Twitter, Instagram } from "lucide-react";
 
 const Footer = () => {
@@ -21,11 +22,11 @@ const Footer = () => {
                     <p className="text-gray-600 text-sm">
                         Get updates on new products, offers, and tips for your projects.
                     </p>
-                    <div className="flex flex-col lg:flex-row gap-2 mt-2">
-                        <input
+                    <div className="flex flex-col lg:flex-row gap-4 mt-2">
+                        <Input
                             type="email"
                             placeholder="Enter your email"
-                            className="flex-1 border-2 border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-cyan-500"
+                            className="border-cyan-500 focus:border-0"
                         />
                         <Button variant="neutral" >
                             Subscribe

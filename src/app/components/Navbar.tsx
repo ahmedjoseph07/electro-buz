@@ -14,7 +14,7 @@ export default function Navbar() {
         { title: 'Home', href: '/' },
         { title: 'Products', href: '/products' },
         { title: 'Complain', href: '/complain' },
-        { title: 'Contacts', href: '/contact-us' },
+        { title: 'Contacts', href: '/contacts' },
     ];
 
     return (
