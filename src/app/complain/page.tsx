@@ -26,7 +26,7 @@ export default function Complain() {
     ];
 
     return (
-        <section className="py-10 mt-20 bg-gray-50 space-y-10 flex flex-col items-center px-6">
+        <section className="py-10 mt-20 bg-white space-y-10 flex flex-col items-center px-6">
             <div className="text-center max-w-2xl">
                 <h2 className="text-3xl font-bold text-gray-800">
                     Submit a <span className="text-cyan-500">Complaint</span>

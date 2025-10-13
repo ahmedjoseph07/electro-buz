@@ -66,19 +66,19 @@ const Featured = () => {
                     <TabsList className="grid grid-cols-3 mb-8 bg-white border shadow-sm">
                         <TabsTrigger
                             value="robotics"
-                            className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white cursor-pointer"
+                            className="data-[state=active]:bg-cyan-500 cursor-pointer"
                         >
                             Robotics
                         </TabsTrigger>
                         <TabsTrigger
                             value="iot"
-                            className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white cursor-pointer"
+                            className="data-[state=active]:bg-cyan-500 cursor-pointer"
                         >
                             IoT 
                         </TabsTrigger>
                         <TabsTrigger
                             value="electronics"
-                            className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white cursor-pointer"
+                            className="data-[state=active]:bg-cyan-500 cursor-pointer"
                         >
                             Electronics
                         </TabsTrigger>

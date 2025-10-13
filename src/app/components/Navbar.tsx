@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import Link from 'next/link';
 import Image from 'next/image';
-import { LogIn, MenuSquare, ShoppingCart } from 'lucide-react';
+import { MenuSquare, ShoppingCart } from 'lucide-react';
+import AuthModal from './AuthModal';
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
@@ -45,9 +46,7 @@ export default function Navbar() {
                         </Link>
                     ))}
                     <Button className='rounded-full'><ShoppingCart />Cart</Button>
-                    <Button variant="neutral">
-                        <LogIn /> Login
-                    </Button>
+                    <AuthModal/>
                 </div>
 
                 {/* Mobile Menu */}
@@ -74,9 +73,7 @@ export default function Navbar() {
                                     </Link>
                                 ))}
                                 <Button><ShoppingCart /> Cart</Button>
-                                <Button variant="neutral">
-                                    <LogIn /> Login
-                                </Button>
+                                <AuthModal/>
                             </div>
                         </SheetContent>
                     </Sheet>

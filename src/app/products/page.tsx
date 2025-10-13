@@ -51,7 +51,7 @@ const products = [
 
 export default function Products() {
     return (
-        <section className="py-10 mt-20 bg-gray-50 space-y-10 flex flex-col items-center px-6">
+        <section className="py-10 mt-20 bg-white space-y-10 flex flex-col items-center px-6">
             {/* --- Header --- */}
             <div className="text-center max-w-2xl">
                 <h2 className="text-3xl font-bold text-gray-800">
@@ -79,12 +79,12 @@ export default function Products() {
                             />
                         </div>
                         <CardHeader className="text-center mt-2">
-                            <CardTitle className="text-lg font-bold text-cyan-600">{p.name}</CardTitle>
+                            <CardTitle className="text-lg font-semibold text-cyan-600">{p.name}</CardTitle>
                             <CardDescription className="text-gray-600 text-sm">{p.description}</CardDescription>
                         </CardHeader>
                         <CardContent className="flex justify-between items-center px-6 pb-4 mt-auto">
-                            <span className="text-xl font-semibold text-cyan-600">{p.price}</span>
-                            <Button className="bg-cyan-500 hover:bg-cyan-600 text-white flex items-center gap-2">
+                            <span className="text-xl font-extrabold text-cyan-600">{p.price}</span>
+                            <Button className="flex items-center gap-2">
                                 <ShoppingCart className="w-4 h-4" />
                                 Add to Cart
                             </Button>
