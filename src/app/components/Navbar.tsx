@@ -30,7 +30,7 @@ export default function Navbar() {
                 icon: <LogOut className="text-red-500 w-5 h-5" />,
             });
         } catch (err: any) {
-            toast.warning("Logout failed", {
+            toast.warning(`{Logout failed}${err}`, {
                 icon: <XCircle className="text-red-500 w-5 h-5" />,
             });
         }
@@ -68,7 +68,7 @@ export default function Navbar() {
                         {
                             user ? (<div>
                                 <div className="flex items-center gap-3">
-                                    <img src={user.photoURL || "/avatar-placeholder.png"} alt="avatar" className="w-8 h-8 rounded-full" />
+                                    <Image src={user.photoURL || "/avatar-placeholder.png"} alt="avatar" className="w-8 h-8 rounded-full" />
                                     <span className="text-sm">{user.displayName || user.email}</span>
                                     <Button variant="neutral" onClick={handleLogout}>
                                         Logout
@@ -112,7 +112,7 @@ export default function Navbar() {
                                         {
                                             user ? (<div>
                                                 <div className="flex items-center gap-3">
-                                                    <img src={user.photoURL || "/avatar-placeholder.png"} alt="avatar" className="w-8 h-8 rounded-full" />
+                                                    <Image src={user.photoURL || "/avatar-placeholder.png"} alt="avatar" className="w-8 h-8 rounded-full" />
                                                     <span className="text-sm">{user.displayName || user.email}</span>
                                                     <Button variant="neutral" onClick={handleLogout}>
                                                         Logout
