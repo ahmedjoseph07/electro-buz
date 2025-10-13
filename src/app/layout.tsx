@@ -4,6 +4,8 @@ import "./globals.css";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Providers from "@/features/auth/Providers";
+import { Toaster } from "@/components/ui/sonner";
+
 
 const publicSans = Public_Sans({
   subsets: ['latin'],
@@ -31,6 +33,7 @@ export default function RootLayout({
           {children}
           <Footer />
         </Providers>
+        <Toaster duration={2000} position="top-right" />
       </body>
     </html>
   );

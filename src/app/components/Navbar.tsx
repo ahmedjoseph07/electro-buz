@@ -5,10 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import Link from 'next/link';
 import Image from 'next/image';
-import { MenuSquare, ShoppingCart } from 'lucide-react';
+import { LogOut, MenuSquare, ShoppingCart, XCircle } from 'lucide-react';
 import AuthModal from './AuthModal';
-import { useAppDispatch, useAppSelector } from '../hook';
+import { useAppDispatch, useAppSelector } from '../hooks/reduxHook';
 import { logoutUser } from '@/features/auth/authSlice';
+import { toast } from 'sonner';
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
@@ -22,6 +23,19 @@ export default function Navbar() {
         { title: 'Complain', href: '/complain' },
         { title: 'Contacts', href: '/contacts' },
     ];
+
+    const handleLogout = async () => {
+        try {
+            await dispatch(logoutUser()).unwrap();
+            toast.success("Logged out successfully", {
+                icon: <LogOut className="text-red-500 w-5 h-5" />,
+            });
+        } catch (err: any) {
+            toast.warning("Logout failed", {
+                icon: <XCircle className="text-red-500 w-5 h-5" />,
+            });
+        }
+    };
 
     return (
         <section className='fixed top-0 left-0 bg-white border-cyan-300 border-b-1 w-full px-4 z-50'>
@@ -50,19 +64,19 @@ export default function Navbar() {
                             {link.title}
                         </Link>
                     ))}
-                    <Button variant="noShadow"  className='rounded-full'><ShoppingCart className="hover:scale-110" />Cart</Button>
+                    <Button variant="noShadow" className='rounded-full'><ShoppingCart className="hover:scale-110" />Cart</Button>
                     <div>
                         {
                             user ? (<div>
                                 <div className="flex items-center gap-3">
                                     <img src={user.photoURL || "/avatar-placeholder.png"} alt="avatar" className="w-8 h-8 rounded-full" />
                                     <span className="text-sm">{user.displayName || user.email}</span>
-                                    <Button variant="neutral"  onClick={() => dispatch(logoutUser())}>
+                                    <Button variant="neutral" onClick={handleLogout}>
                                         Logout
                                     </Button>
                                 </div>
                             </div>) : (
-                                <div><AuthModal/></div>
+                                <div><AuthModal /></div>
                             )
                         }
                     </div>
@@ -92,8 +106,26 @@ export default function Navbar() {
                                         {link.title}
                                     </Link>
                                 ))}
-                                <Button><ShoppingCart /> Cart</Button>
-                                <AuthModal />
+
+                                <div className={`flex ${user && "flex-col"} justify-center gap-4`}>
+                                    <Button className={`w-1/2 ${user && "w-full"}`}><ShoppingCart /> Cart</Button>
+                                    <div>
+                                        {
+                                            user ? (<div>
+                                                <div className="flex items-center gap-3">
+                                                    <img src={user.photoURL || "/avatar-placeholder.png"} alt="avatar" className="w-8 h-8 rounded-full" />
+                                                    <span className="text-sm">{user.displayName || user.email}</span>
+                                                    <Button variant="neutral" onClick={handleLogout}>
+                                                        Logout
+                                                    </Button>
+                                                </div>
+                                            </div>) : (
+                                                <AuthModal />
+                                            )
+                                        }
+                                    </div>
+                                </div>
+
                             </div>
                         </SheetContent>
                     </Sheet>

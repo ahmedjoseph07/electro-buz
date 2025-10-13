@@ -11,39 +11,90 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import {
-    Mail,
-    Lock,
-    User,
-    LogIn,
-    Loader2,
-    LogInIcon,
-} from "lucide-react";
-import { googleLogin, loginUser, registerUser } from "@/features/auth/authSlice";
-import { useAppDispatch, useAppSelector } from "../hook";
+import { Mail, Lock, User, LogIn, Loader2, CheckCircle2, XCircle, LogOut } from "lucide-react";
+import { toast } from "sonner";
+import { googleLogin, loginUser, registerUser, logoutUser } from "@/features/auth/authSlice";
+import { useAppDispatch, useAppSelector } from "../hooks/reduxHook";
 
 export default function AuthModal() {
     const dispatch = useAppDispatch();
-    const { loading, error } = useAppSelector((s) => s.auth);
+    const { loading } = useAppSelector((s) => s.auth);
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [name, setName] = useState("");
     const [isLogin, setIsLogin] = useState(true);
 
-    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    const validateInputs = () => {
+        if (!email.trim() || !password.trim()) {
+            toast.warning("Email and password are required", {
+                icon: <XCircle className="text-red-500 w-5 h-5" />,
+            });
+            return false;
+        }
+
+        if (!/\S+@\S+\.\S+/.test(email)) {
+            toast.warning("Please enter a valid email address", {
+                icon: <XCircle className="text-red-500 w-5 h-5" />,
+            });
+            return false;
+        }
+
+        if (password.length < 6) {
+            toast.warning("Password must be at least 6 characters", {
+                icon: <XCircle className="text-red-500 w-5 h-5" />,
+            });
+            return false;
+        }
+
+        if (!isLogin && !name.trim()) {
+            toast.warning("Please enter your full name", {
+                icon: <XCircle className="text-red-500 w-5 h-5" />,
+            });
+            return false;
+        }
+
+        return true;
+    };
+
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (isLogin) {
-            dispatch(loginUser({ email, password }));
-        } else {
-            dispatch(registerUser({ email, password, displayName: name }));
+
+        if (!validateInputs()) return;
+
+        try {
+            if (isLogin) {
+                await dispatch(loginUser({ email, password })).unwrap();
+                toast.success("Welcome back", {
+                    icon: <CheckCircle2 className="text-green-500 w-5 h-5" />,
+                });
+            } else {
+                await dispatch(registerUser({ email, password, displayName: name })).unwrap();
+                toast.success("Account created successfully", {
+                    icon: <CheckCircle2 className="text-green-500 w-5 h-5" />,
+                });
+            }
+        } catch (err: any) {
+            toast.warning(err.message || "Invalid Credentials", {
+                icon: <XCircle className="text-red-500 w-5 h-5" />,
+            });
         }
     };
 
-    const handleGoogle = () => {
-        dispatch(googleLogin());
+    // Google Login
+    const handleGoogle = async () => {
+        try {
+            await dispatch(googleLogin()).unwrap();
+            toast.success("Signed in with Google", {
+                icon: <CheckCircle2 className="text-green-500 -5 h-5" />,
+            });
+        } catch (err: any) {
+            toast.error(err.message || "Google login failed", {
+                icon: <XCircle className="text-red-500 w-5 h-5" />,
+            });
+        }
     };
+
 
     return (
         <Dialog>
@@ -52,7 +103,6 @@ export default function AuthModal() {
                     <LogIn className="w-4 h-4 mr-2" /> Login
                 </Button>
             </DialogTrigger>
-
 
             <DialogContent className="sm:max-w-sm p-6">
                 <DialogHeader>
@@ -67,18 +117,29 @@ export default function AuthModal() {
                         <TabsTrigger value="signup">Register</TabsTrigger>
                     </TabsList>
 
+                    {/* Login TAB */}
                     <TabsContent value="login">
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="relative">
                                 <Mail className="absolute left-3 top-3 w-4 h-4 text-cyan-500" />
-                                <Input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="Email" className="pl-10 border-cyan-500 focus:border-0" required />
+                                <Input
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    type="email"
+                                    placeholder="Email"
+                                    className="pl-10 border-cyan-500 focus:border-0"
+                                />
                             </div>
                             <div className="relative">
                                 <Lock className="absolute left-3 top-3 w-4 h-4 text-cyan-500" />
-                                <Input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="Password" className="pl-10 border-cyan-500 focus:border-0" required />
+                                <Input
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    type="password"
+                                    placeholder="Password"
+                                    className="pl-10 border-cyan-500 focus:border-0"
+                                />
                             </div>
-
-                            {error && <p className="text-sm text-red-500">{error}</p>}
 
                             <Button type="submit" className="w-full" disabled={loading}>
                                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Login"}
@@ -86,24 +147,45 @@ export default function AuthModal() {
                         </form>
                     </TabsContent>
 
+                    {/* Register TAB */}
                     <TabsContent value="signup">
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="relative">
                                 <User className="absolute left-3 top-3 w-4 h-4 text-cyan-500" />
-                                <Input value={name} onChange={(e) => setName(e.target.value)} type="text" placeholder="Full Name" className="pl-10 border-cyan-500 focus:border-0" required />
+                                <Input
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    type="text"
+                                    placeholder="Full Name"
+                                    className="pl-10 border-cyan-500 focus:border-0"
+                                />
                             </div>
                             <div className="relative">
                                 <Mail className="absolute left-3 top-3 w-4 h-4 text-cyan-500" />
-                                <Input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="Email" className="pl-10 border-cyan-500 focus:border-0" required />
+                                <Input
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    type="email"
+                                    placeholder="Email"
+                                    className="pl-10 border-cyan-500 focus:border-0"
+                                />
                             </div>
                             <div className="relative">
                                 <Lock className="absolute left-3 top-3 w-4 h-4 text-cyan-500" />
-                                <Input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="Password" className="pl-10 border-cyan-500 focus:border-0" required />
+                                <Input
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    type="password"
+                                    placeholder="Password"
+                                    className="pl-10 border-cyan-500 focus:border-0"
+                                />
                             </div>
 
-                            {error && <p className="text-sm text-red-500">{error}</p>}
-
-                            <Button type="submit" className="w-full bg-cyan-500 hover:bg-cyan-600 text-white" disabled={loading}>
+                            <Button
+                                type="submit"
+                                className="w-full"
+                                disabled={loading}
+                            >
                                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Sign Up"}
                             </Button>
                         </form>
@@ -116,8 +198,18 @@ export default function AuthModal() {
                     <div className="flex-1 border-t" />
                 </div>
 
-                <Button onClick={handleGoogle} variant="neutral" className="w-full flex items-center justify-center gap-2" disabled={loading}>
-                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <img src="/google.png" alt="google" className="w-4 h-4" />}
+                {/* Google Login */}
+                <Button
+                    onClick={handleGoogle}
+                    variant="neutral"
+                    className="w-full flex items-center justify-center gap-2"
+                    disabled={loading}
+                >
+                    {loading ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                        <img src="/google.png" alt="google" className="w-4 h-4" />
+                    )}
                     Continue with Google
                 </Button>
             </DialogContent>
