@@ -87,133 +87,130 @@ export default function AuthModal() {
         try {
             await dispatch(googleLogin()).unwrap();
             toast.success("Signed in with Google", {
-                icon: <CheckCircle2 className="text-green-500 -5 h-5" />,
+                icon: <CheckCircle2 className="text-green-500 w-5 h-5" />,
             });
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : "Invalid Credentials";
             toast.warning(message, { icon: <XCircle className="text-red-500 w-5 h-5" /> });
         };
     }
-};
+    return (
+        <Dialog>
+            <DialogTrigger asChild>
+                <Button variant="neutral">
+                    <LogIn className="w-4 h-4 mr-2" /> Login
+                </Button>
+            </DialogTrigger>
 
+            <DialogContent className="sm:max-w-sm p-6">
+                <DialogHeader>
+                    <DialogTitle className="text-center text-2xl font-bold text-gray-800">
+                        Welcome to <span className="text-cyan-500">ElectroBuz⚡</span>
+                    </DialogTitle>
+                </DialogHeader>
 
-return (
-    <Dialog>
-        <DialogTrigger asChild>
-            <Button variant="neutral">
-                <LogIn className="w-4 h-4 mr-2" /> Login
-            </Button>
-        </DialogTrigger>
+                <Tabs defaultValue="login" onValueChange={(v) => setIsLogin(v === "login")}>
+                    <TabsList className="grid w-full grid-cols-2 mb-4">
+                        <TabsTrigger value="login">Login</TabsTrigger>
+                        <TabsTrigger value="signup">Register</TabsTrigger>
+                    </TabsList>
 
-        <DialogContent className="sm:max-w-sm p-6">
-            <DialogHeader>
-                <DialogTitle className="text-center text-2xl font-bold text-gray-800">
-                    Welcome to <span className="text-cyan-500">ElectroBuz⚡</span>
-                </DialogTitle>
-            </DialogHeader>
+                    {/* Login TAB */}
+                    <TabsContent value="login">
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div className="relative">
+                                <Mail className="absolute left-3 top-3 w-4 h-4 text-cyan-500" />
+                                <Input
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    type="email"
+                                    placeholder="Email"
+                                    className="pl-10 border-cyan-500 focus:border-0"
+                                />
+                            </div>
+                            <div className="relative">
+                                <Lock className="absolute left-3 top-3 w-4 h-4 text-cyan-500" />
+                                <Input
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    type="password"
+                                    placeholder="Password"
+                                    className="pl-10 border-cyan-500 focus:border-0"
+                                />
+                            </div>
 
-            <Tabs defaultValue="login" onValueChange={(v) => setIsLogin(v === "login")}>
-                <TabsList className="grid w-full grid-cols-2 mb-4">
-                    <TabsTrigger value="login">Login</TabsTrigger>
-                    <TabsTrigger value="signup">Register</TabsTrigger>
-                </TabsList>
+                            <Button type="submit" className="w-full" disabled={loading}>
+                                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Login"}
+                            </Button>
+                        </form>
+                    </TabsContent>
 
-                {/* Login TAB */}
-                <TabsContent value="login">
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="relative">
-                            <Mail className="absolute left-3 top-3 w-4 h-4 text-cyan-500" />
-                            <Input
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                type="email"
-                                placeholder="Email"
-                                className="pl-10 border-cyan-500 focus:border-0"
-                            />
-                        </div>
-                        <div className="relative">
-                            <Lock className="absolute left-3 top-3 w-4 h-4 text-cyan-500" />
-                            <Input
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                type="password"
-                                placeholder="Password"
-                                className="pl-10 border-cyan-500 focus:border-0"
-                            />
-                        </div>
+                    {/* Register TAB */}
+                    <TabsContent value="signup">
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div className="relative">
+                                <User className="absolute left-3 top-3 w-4 h-4 text-cyan-500" />
+                                <Input
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    type="text"
+                                    placeholder="Full Name"
+                                    className="pl-10 border-cyan-500 focus:border-0"
+                                />
+                            </div>
+                            <div className="relative">
+                                <Mail className="absolute left-3 top-3 w-4 h-4 text-cyan-500" />
+                                <Input
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    type="email"
+                                    placeholder="Email"
+                                    className="pl-10 border-cyan-500 focus:border-0"
+                                />
+                            </div>
+                            <div className="relative">
+                                <Lock className="absolute left-3 top-3 w-4 h-4 text-cyan-500" />
+                                <Input
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    type="password"
+                                    placeholder="Password"
+                                    className="pl-10 border-cyan-500 focus:border-0"
+                                />
+                            </div>
 
-                        <Button type="submit" className="w-full" disabled={loading}>
-                            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Login"}
-                        </Button>
-                    </form>
-                </TabsContent>
+                            <Button
+                                type="submit"
+                                className="w-full"
+                                disabled={loading}
+                            >
+                                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Sign Up"}
+                            </Button>
+                        </form>
+                    </TabsContent>
+                </Tabs>
 
-                {/* Register TAB */}
-                <TabsContent value="signup">
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="relative">
-                            <User className="absolute left-3 top-3 w-4 h-4 text-cyan-500" />
-                            <Input
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                type="text"
-                                placeholder="Full Name"
-                                className="pl-10 border-cyan-500 focus:border-0"
-                            />
-                        </div>
-                        <div className="relative">
-                            <Mail className="absolute left-3 top-3 w-4 h-4 text-cyan-500" />
-                            <Input
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                type="email"
-                                placeholder="Email"
-                                className="pl-10 border-cyan-500 focus:border-0"
-                            />
-                        </div>
-                        <div className="relative">
-                            <Lock className="absolute left-3 top-3 w-4 h-4 text-cyan-500" />
-                            <Input
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                type="password"
-                                placeholder="Password"
-                                className="pl-10 border-cyan-500 focus:border-0"
-                            />
-                        </div>
+                <div className="flex items-center my-4">
+                    <div className="flex-1 border-t" />
+                    <span className="text-sm text-gray-400 px-3">OR</span>
+                    <div className="flex-1 border-t" />
+                </div>
 
-                        <Button
-                            type="submit"
-                            className="w-full"
-                            disabled={loading}
-                        >
-                            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Sign Up"}
-                        </Button>
-                    </form>
-                </TabsContent>
-            </Tabs>
-
-            <div className="flex items-center my-4">
-                <div className="flex-1 border-t" />
-                <span className="text-sm text-gray-400 px-3">OR</span>
-                <div className="flex-1 border-t" />
-            </div>
-
-            {/* Google Login */}
-            <Button
-                onClick={handleGoogle}
-                variant="neutral"
-                className="w-full flex items-center justify-center gap-2"
-                disabled={loading}
-            >
-                {loading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                    <Image src="/google.png" alt="google" width={300} height={300} className="w-4 h-4" />
-                )}
-                Continue with Google
-            </Button>
-        </DialogContent>
-    </Dialog>
-);
+                {/* Google Login */}
+                <Button
+                    onClick={handleGoogle}
+                    variant="neutral"
+                    className="w-full flex items-center justify-center gap-2"
+                    disabled={loading}
+                >
+                    {loading ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                        <Image src="/google.png" alt="google" width={300} height={300} className="w-4 h-4" />
+                    )}
+                    Continue with Google
+                </Button>
+            </DialogContent>
+        </Dialog>
+    );
 }
