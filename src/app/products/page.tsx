@@ -3,6 +3,7 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart } from "lucide-react";
+import Image from "next/image";
 
 const products = [
     {
@@ -72,7 +73,9 @@ export default function Products() {
                                    active:translate-y-0 active:shadow-none"
                     >
                         <div className="overflow-hidden rounded-t-2xl">
-                            <img
+                            <Image
+                                width={300}
+                                height={300}
                                 src={p.image}
                                 alt={p.name}
                                 className="w-full h-56 object-cover transition-transform duration-500 group-hover:scale-105"

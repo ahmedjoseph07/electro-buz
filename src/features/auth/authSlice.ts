@@ -4,7 +4,6 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
-  User as FirebaseUser,
 } from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebaseConfig";
 

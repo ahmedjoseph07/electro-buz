@@ -10,7 +10,8 @@ import { Toaster } from "@/components/ui/sonner";
 const publicSans = Public_Sans({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
-  display: 'swap'
+  display: 'swap',
+  fallback: ["Helvetica", "Arial", "sans-serif"],
 })
 
 export const metadata: Metadata = {

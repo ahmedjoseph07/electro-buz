@@ -15,7 +15,6 @@ export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
     const dispatch = useAppDispatch();
     const { user } = useAppSelector((s) => s.auth);
-    console.log(user)
 
     const navLinks = [
         { title: 'Home', href: '/' },

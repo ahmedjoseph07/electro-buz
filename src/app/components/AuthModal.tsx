@@ -11,10 +11,11 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Mail, Lock, User, LogIn, Loader2, CheckCircle2, XCircle, LogOut } from "lucide-react";
+import { Mail, Lock, User, LogIn, Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "sonner";
-import { googleLogin, loginUser, registerUser, logoutUser } from "@/features/auth/authSlice";
+import { googleLogin, loginUser, registerUser} from "@/features/auth/authSlice";
 import { useAppDispatch, useAppSelector } from "../hooks/reduxHook";
+import Image from "next/image";
 
 export default function AuthModal() {
     const dispatch = useAppDispatch();
@@ -208,7 +209,7 @@ export default function AuthModal() {
                     {loading ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
-                        <img src="/google.png" alt="google" className="w-4 h-4" />
+                        <Image src="/google.png" alt="google" width={300} height={300} className="w-4 h-4" />
                     )}
                     Continue with Google
                 </Button>
