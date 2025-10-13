@@ -67,7 +67,7 @@ export default function Navbar() {
                         {
                             user ? (<div>
                                 <div className="flex items-center gap-3">
-                                    <Image src={user.photoURL || "/avatar-placeholder.png"} alt="avatar" className="w-8 h-8 rounded-full" />
+                                    <Image width={200} height={200} src={user.photoURL || "/avatar-placeholder.png"} alt="avatar" className="w-8 h-8 rounded-full" />
                                     <span className="text-sm">{user.displayName || user.email}</span>
                                     <Button variant="neutral" onClick={handleLogout}>
                                         Logout

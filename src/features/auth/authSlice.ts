@@ -38,8 +38,9 @@ export const registerUser = createAsyncThunk(
         displayName: user.displayName || displayName || null,
         photoURL: user.photoURL || null,
       };
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(err.message || "Registration failed");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Registration failed";
+      return thunkAPI.rejectWithValue(message);
     }
   }
 );
@@ -56,8 +57,9 @@ export const loginUser = createAsyncThunk(
         displayName: user.displayName || null,
         photoURL: user.photoURL || null,
       };
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(err.message || "Login failed");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Login failed";
+      return thunkAPI.rejectWithValue(message);
     }
   }
 );
@@ -72,8 +74,9 @@ export const googleLogin = createAsyncThunk("auth/googleLogin", async (_, thunkA
       displayName: user.displayName || null,
       photoURL: user.photoURL || null,
     };
-  } catch (err: any) {
-    return thunkAPI.rejectWithValue(err.message || "Google login failed");
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Google login failed";
+    return thunkAPI.rejectWithValue(message);
   }
 });
 
@@ -81,8 +84,9 @@ export const logoutUser = createAsyncThunk("auth/logoutUser", async (_, thunkAPI
   try {
     await signOut(auth);
     return null;
-  } catch (err: any) {
-    return thunkAPI.rejectWithValue(err.message || "Logout failed");
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Logout failed";
+    return thunkAPI.rejectWithValue(message);
   }
 });
 
