@@ -7,9 +7,14 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { MenuSquare, ShoppingCart } from 'lucide-react';
 import AuthModal from './AuthModal';
+import { useAppDispatch, useAppSelector } from '../hook';
+import { logoutUser } from '@/features/auth/authSlice';
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
+    const dispatch = useAppDispatch();
+    const { user } = useAppSelector((s) => s.auth);
+    console.log(user)
 
     const navLinks = [
         { title: 'Home', href: '/' },
@@ -45,8 +50,23 @@ export default function Navbar() {
                             {link.title}
                         </Link>
                     ))}
-                    <Button className='rounded-full'><ShoppingCart />Cart</Button>
-                    <AuthModal/>
+                    <Button variant="noShadow"  className='rounded-full'><ShoppingCart className="hover:scale-110" />Cart</Button>
+                    <div>
+                        {
+                            user ? (<div>
+                                <div className="flex items-center gap-3">
+                                    <img src={user.photoURL || "/avatar-placeholder.png"} alt="avatar" className="w-8 h-8 rounded-full" />
+                                    <span className="text-sm">{user.displayName || user.email}</span>
+                                    <Button variant="neutral"  onClick={() => dispatch(logoutUser())}>
+                                        Logout
+                                    </Button>
+                                </div>
+                            </div>) : (
+                                <div><AuthModal/></div>
+                            )
+                        }
+                    </div>
+
                 </div>
 
                 {/* Mobile Menu */}
@@ -73,7 +93,7 @@ export default function Navbar() {
                                     </Link>
                                 ))}
                                 <Button><ShoppingCart /> Cart</Button>
-                                <AuthModal/>
+                                <AuthModal />
                             </div>
                         </SheetContent>
                     </Sheet>

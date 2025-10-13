@@ -3,11 +3,12 @@ import { Public_Sans } from 'next/font/google'
 import "./globals.css";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import Providers from "@/features/auth/Providers";
 
 const publicSans = Public_Sans({
-  subsets:['latin'],
-  weight:['400','500','600','700'],
-  display:'swap'
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  display: 'swap'
 })
 
 export const metadata: Metadata = {
@@ -25,9 +26,11 @@ export default function RootLayout({
       <body
         className={`${publicSans.className} antialiased`}
       >
-        <Navbar/>
-        {children}
-        <Footer/>
+        <Providers>
+          <Navbar />
+          {children}
+          <Footer />
+        </Providers>
       </body>
     </html>
   );

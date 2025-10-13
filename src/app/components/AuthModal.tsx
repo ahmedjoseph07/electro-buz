@@ -20,22 +20,29 @@ import {
     Loader2,
     LogInIcon,
 } from "lucide-react";
+import { googleLogin, loginUser, registerUser } from "@/features/auth/authSlice";
+import { useAppDispatch, useAppSelector } from "../hook";
 
 export default function AuthModal() {
-    const [loading, setLoading] = useState<boolean>(false);
+    const dispatch = useAppDispatch();
+    const { loading, error } = useAppSelector((s) => s.auth);
 
-    // --- Mocking auth handlers (will replace later with Firebase) ---
-    const handleGoogleLogin = async (): Promise<void> => {
-        setLoading(true);
-        // firebase auth code will be here
-        setTimeout(() => setLoading(false), 1500);
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [name, setName] = useState("");
+    const [isLogin, setIsLogin] = useState(true);
+
+    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (isLogin) {
+            dispatch(loginUser({ email, password }));
+        } else {
+            dispatch(registerUser({ email, password, displayName: name }));
+        }
     };
 
-    const handleEmailAuth = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
-        e.preventDefault();
-        setLoading(true);
-        // email/password auth here
-        setTimeout(() => setLoading(false), 1500);
+    const handleGoogle = () => {
+        dispatch(googleLogin());
     };
 
     return (
@@ -46,6 +53,7 @@ export default function AuthModal() {
                 </Button>
             </DialogTrigger>
 
+
             <DialogContent className="sm:max-w-sm p-6">
                 <DialogHeader>
                     <DialogTitle className="text-center text-2xl font-bold text-gray-800">
@@ -53,110 +61,65 @@ export default function AuthModal() {
                     </DialogTitle>
                 </DialogHeader>
 
-                <Tabs defaultValue="login" className="mt-4">
-                    {/* Tabs header */}
+                <Tabs defaultValue="login" onValueChange={(v) => setIsLogin(v === "login")}>
                     <TabsList className="grid w-full grid-cols-2 mb-4">
                         <TabsTrigger value="login">Login</TabsTrigger>
                         <TabsTrigger value="signup">Register</TabsTrigger>
                     </TabsList>
 
-                    {/* Login Form */}
                     <TabsContent value="login">
-                        <form onSubmit={handleEmailAuth} className="space-y-4">
+                        <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="relative">
                                 <Mail className="absolute left-3 top-3 w-4 h-4 text-cyan-500" />
-                                <Input
-                                    type="email"
-                                    placeholder="Email"
-                                    className="pl-10 border-cyan-500 focus:border-0"
-                                    required
-                                />
+                                <Input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="Email" className="pl-10 border-cyan-500 focus:border-0" required />
                             </div>
                             <div className="relative">
                                 <Lock className="absolute left-3 top-3 w-4 h-4 text-cyan-500" />
-                                <Input
-                                    type="password"
-                                    placeholder="Password"
-                                    className="pl-10 border-cyan-500 focus:border-0"
-                                    required
-                                />
+                                <Input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="Password" className="pl-10 border-cyan-500 focus:border-0" required />
                             </div>
 
-                            <Button
-                                type="submit"
-                                className="w-full"
-                                disabled={loading}
-                            >
-                                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><LogInIcon />Login</>}
+                            {error && <p className="text-sm text-red-500">{error}</p>}
+
+                            <Button type="submit" className="w-full" disabled={loading}>
+                                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Login"}
                             </Button>
                         </form>
                     </TabsContent>
 
-                    {/* Signup Form */}
                     <TabsContent value="signup">
-                        <form onSubmit={handleEmailAuth} className="space-y-4">
+                        <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="relative">
                                 <User className="absolute left-3 top-3 w-4 h-4 text-cyan-500" />
-                                <Input
-                                    type="text"
-                                    placeholder="Full Name"
-                                    className="pl-10 border-cyan-500 focus:border-0"
-                                    required
-                                />
+                                <Input value={name} onChange={(e) => setName(e.target.value)} type="text" placeholder="Full Name" className="pl-10 border-cyan-500 focus:border-0" required />
                             </div>
                             <div className="relative">
                                 <Mail className="absolute left-3 top-3 w-4 h-4 text-cyan-500" />
-                                <Input
-                                    type="email"
-                                    placeholder="Email"
-                                    className="pl-10 border-cyan-500 focus:border-0"
-                                    required
-                                />
+                                <Input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="Email" className="pl-10 border-cyan-500 focus:border-0" required />
                             </div>
                             <div className="relative">
                                 <Lock className="absolute left-3 top-3 w-4 h-4 text-cyan-500" />
-                                <Input
-                                    type="password"
-                                    placeholder="Password"
-                                    className="pl-10 border-cyan-500 focus:border-0"
-                                    required
-                                />
+                                <Input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="Password" className="pl-10 border-cyan-500 focus:border-0" required />
                             </div>
 
-                            <Button
-                                type="submit"
-                                className="w-full bg-cyan-500 hover:bg-cyan-600 text-white"
-                                disabled={loading}
-                            >
+                            {error && <p className="text-sm text-red-500">{error}</p>}
+
+                            <Button type="submit" className="w-full bg-cyan-500 hover:bg-cyan-600 text-white" disabled={loading}>
                                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Sign Up"}
                             </Button>
                         </form>
                     </TabsContent>
                 </Tabs>
 
-                {/* Divider */}
                 <div className="flex items-center my-4">
-                    <Separator className="flex-1" />
+                    <div className="flex-1 border-t" />
                     <span className="text-sm text-gray-400 px-3">OR</span>
-                    <Separator className="flex-1" />
+                    <div className="flex-1 border-t" />
                 </div>
 
-                {/* Google Auth*/}
-                <Button
-                    onClick={handleGoogleLogin}
-                    variant="neutral"
-                    className="w-full flex items-center justify-center gap-2"
-                    disabled={loading}
-                >
-                    {loading ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                        <>
-                            <img src="/google.png" alt="google-icon" className="w-4 h-4" /> Continue with Google
-                        </>
-                    )}
+                <Button onClick={handleGoogle} variant="neutral" className="w-full flex items-center justify-center gap-2" disabled={loading}>
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <img src="/google.png" alt="google" className="w-4 h-4" />}
+                    Continue with Google
                 </Button>
-
             </DialogContent>
         </Dialog>
     );
