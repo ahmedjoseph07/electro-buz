@@ -29,11 +29,10 @@ export default function Navbar() {
             toast.success("Logged out successfully", {
                 icon: <LogOut className="text-red-500 w-5 h-5" />,
             });
-        } catch (err: any) {
-            toast.warning(`{Logout failed}${err}`, {
-                icon: <XCircle className="text-red-500 w-5 h-5" />,
-            });
-        }
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : "Logout failed";
+            toast.warning(message, { icon: <XCircle className="text-red-500 w-5 h-5" /> });
+        };
     };
 
     return (

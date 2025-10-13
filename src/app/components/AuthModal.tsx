@@ -34,13 +34,6 @@ export default function AuthModal() {
             return false;
         }
 
-        if (!/\S+@\S+\.\S+/.test(email)) {
-            toast.warning("Please enter a valid email address", {
-                icon: <XCircle className="text-red-500 w-5 h-5" />,
-            });
-            return false;
-        }
-
         if (password.length < 6) {
             toast.warning("Password must be at least 6 characters", {
                 icon: <XCircle className="text-red-500 w-5 h-5" />,
@@ -75,11 +68,10 @@ export default function AuthModal() {
                     icon: <CheckCircle2 className="text-green-500 w-5 h-5" />,
                 });
             }
-        } catch (err: any) {
-            toast.warning(err.message || "Invalid Credentials", {
-                icon: <XCircle className="text-red-500 w-5 h-5" />,
-            });
-        }
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : "Invalid Credentials";
+            toast.warning(message, { icon: <XCircle className="text-red-500 w-5 h-5" /> });
+        };
     };
 
     // Google Login
@@ -206,7 +198,7 @@ export default function AuthModal() {
                     {loading ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
-                        <Image src="/google.png" alt="google" width={300} height={300} className="w-4 h-4" />
+                        <Image src="/google.png" width={200} height={200} alt="google" className="w-4 h-4" />
                     )}
                     Continue with Google
                 </Button>
