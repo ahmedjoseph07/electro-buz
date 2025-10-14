@@ -3,7 +3,7 @@ import mongoose, { Mongoose } from "mongoose";
 const MONGODB_URI = process.env.NEXT_PUBLIC_MONGODB_URI as string;
 
 if (!MONGODB_URI) {
-  throw new Error("Please define the MONGODB_URI environment variable");
+  throw new Error("Please define the NEXT_PUBLIC_MONGODB_URI environment variable");
 }
 
 interface MongooseCache {
@@ -11,7 +11,11 @@ interface MongooseCache {
   promise: Promise<Mongoose> | null;
 }
 
-const cached: MongooseCache = (global as any).mongooseCache || {
+declare global {
+  var mongooseCache: MongooseCache | undefined;
+}
+
+const cached: MongooseCache = global.mongooseCache ?? {
   conn: null,
   promise: null,
 };
@@ -24,7 +28,7 @@ export async function connectDB(): Promise<Mongoose> {
   }
 
   cached.conn = await cached.promise;
-  (global as any).mongooseCache = cached;
+  global.mongooseCache = cached;
 
   return cached.conn;
 }
