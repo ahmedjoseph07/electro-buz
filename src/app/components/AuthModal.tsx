@@ -83,7 +83,7 @@ export default function AuthModal() {
             });
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : "Invalid Credentials";
-            toast.warning(message, { icon: <XCircle className="text-red-500 w-5 h-5" /> });
+            toast.warning(message,{ icon: <XCircle className="text-red-500 w-5 h-5" /> });
         };
     }
     return (
