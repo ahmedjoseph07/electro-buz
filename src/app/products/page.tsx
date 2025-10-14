@@ -25,11 +25,10 @@ export default function Products() {
                 setLoading(false);
             }
         }
-
         fetchProducts();
     }, []);
 
-    if (loading) return <div>Loading...</div>;
+    if (loading) return <div>Loading</div>;
     if (products.length === 0) return <div className="text-center py-20 text-gray-500">No products found.</div>;
     return (
         <section className="py-10 mt-20 bg-white space-y-10 flex flex-col items-center px-6">
@@ -45,36 +44,38 @@ export default function Products() {
 
             {/* --- Product Grid --- */}
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto w-full">
-                {products.map((p) => (
-                    <Card
-                        key={p._id}
-                        className="group cursor-pointer border-2 transition-all duration-300 
+                
+                    {products.map((p) => (
+                        <Card
+                            key={p._id}
+                            className="group cursor-pointer border-2 transition-all duration-300 
                                    hover:-translate-x-2 hover:translate-y-2 hover:shadow-[0_0_0]
                                    active:translate-y-0 active:shadow-none"
-                    >
-                        <div className="overflow-hidden rounded-t-2xl">
-                            <Image
-                                width={300}
-                                height={300}
-                                src={p.image || `https://via.placeholder.com/300x300?text=No+Image`}
-                                alt={p.title}
-                                className="w-full h-56 object-cover transition-transform duration-500 group-hover:scale-105"
-                            />
-                        </div>
-                        <CardHeader className="text-center mt-2">
-                            <CardTitle className="text-lg font-semibold text-cyan-600">{p.title}</CardTitle>
-                            <CardDescription className="text-gray-600 text-sm">{p.description}</CardDescription>
-                        </CardHeader>
-                        <CardContent className="flex justify-between items-center px-6 pb-4 mt-auto">
-                            <span className="text-xl font-extrabold text-cyan-600">&#2547;{p.price} {p.id}</span>
-                            <Button className="flex items-center gap-2">
-                                <ShoppingCart className="w-4 h-4" />
-                                Add to Cart
-                            </Button>
-                        </CardContent>
-                    </Card>
-                ))}
+                        >
+                            <div className="overflow-hidden rounded-t-2xl">
+                                <Image
+                                    width={300}
+                                    height={300}
+                                    src={p.image || `https://via.placeholder.com/300x300?text=No+Image`}
+                                    alt={p.title}
+                                    className="w-full h-56 object-cover transition-transform duration-500 group-hover:scale-105"
+                                />
+                            </div>
+                            <CardHeader className="text-center mt-2">
+                                <CardTitle className="text-lg font-semibold text-cyan-600">{p.title}</CardTitle>
+                                <CardDescription className="text-gray-600 text-sm">{p.description}</CardDescription>
+                            </CardHeader>
+                            <CardContent className="flex justify-between items-center px-6 pb-4 mt-auto">
+                                <span className="text-xl font-extrabold text-cyan-600">&#2547;{p.price} {p.id}</span>
+                                <Button className="flex items-center gap-2">
+                                    <ShoppingCart className="w-4 h-4" />
+                                    Add to Cart
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    ))}
             </div>
+            
         </section>
     );
 }

@@ -8,6 +8,10 @@ export async function GET() {
     const products = await Product.find();
     return NextResponse.json(products);
   } catch (error) {
-    return NextResponse.json({ message: "Failed to fetch products" }, { status: 500 });
+    console.error("Error fetching products:", error);
+    return NextResponse.json(
+      { message: "Failed to fetch products" },
+      { status: 500 }
+    );
   }
 }
