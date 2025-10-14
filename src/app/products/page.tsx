@@ -19,7 +19,6 @@ export default function Products() {
                 if (!res.ok) throw new Error("Failed to fetch products");
                 const data: ProductDoc[] = await res.json();
                 setProducts(data);
-                console.log(data)
             } catch (err) {
                 console.error(err);
             } finally {

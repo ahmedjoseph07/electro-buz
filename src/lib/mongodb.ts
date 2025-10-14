@@ -12,7 +12,6 @@ interface MongooseCache {
 }
 
 declare global {
-
   var mongooseCache: MongooseCache | undefined;
 }
 
