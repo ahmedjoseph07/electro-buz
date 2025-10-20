@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { removeFromCart, setQuantity, clearCart } from "@/features/cart/cartSlice";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -11,13 +11,16 @@ export default function CartPage() {
   const dispatch = useAppDispatch();
   const items = useAppSelector((s) => s.cart.items);
   const total = items.reduce((sum, it) => sum + it.price * it.quantity, 0);
+  const [isClient, setIsClient] = useState(false);
 
-  if (items.length === 0) {
-    return (
-      <div className="py-20 text-center text-gray-500">
-        Your cart is empty.
-      </div>
-    );
+  useEffect(() => setIsClient(true), []);
+
+  if (!isClient) {
+    return <div className="py-20 text-center text-gray-500">Loading...</div>;
+  }
+
+  if (!items.length) {
+    return <div className="py-20 text-center text-gray-500">Your cart is empty.</div>;
   }
 
   return (
