@@ -4,12 +4,11 @@ import Product, { ProductDoc } from "@/models/Product";
 
 export const GET = async (
   req: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> => {
   try {
     await connectDB();
-
-    const { id } = context.params;
+    const { id } = await context.params;
     const product = await Product.findById(id).lean<ProductDoc & { _id: string }>();
 
     if (!product) {
