@@ -6,12 +6,14 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useAppDispatch, useAppSelector } from "../hooks/reduxHook";
 import { ArrowRightCircle, CircleX, Minus, Plus, Trash } from "lucide-react";
+import CheckoutModal from "../components/CheckOutModal";
 
 export default function CartPage() {
   const dispatch = useAppDispatch();
   const items = useAppSelector((s) => s.cart.items);
   const total = items.reduce((sum, it) => sum + it.price * it.quantity, 0);
   const [isClient, setIsClient] = useState(false);
+  const [showCheckout, setShowCheckout] = useState(false);
 
   useEffect(() => setIsClient(true), []);
 
@@ -85,7 +87,10 @@ export default function CartPage() {
         <div className="text-lg font-semibold my-2">Total: &#2547;{total.toFixed(2)}</div>
         <div className="flex gap-4">
           <Button variant="neutral" onClick={() => dispatch(clearCart())}><CircleX /> Clear Cart</Button>
-          <Button><ArrowRightCircle /> Checkout</Button>
+          <Button onClick={() => setShowCheckout(true)}><ArrowRightCircle /> Checkout</Button>
+          {showCheckout && (
+            <CheckoutModal isOpen={showCheckout} onClose={() => setShowCheckout(false)} />
+          )}
         </div>
       </div>
     </div>
