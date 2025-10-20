@@ -2,15 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Product from "@/models/Product";
 
-interface Params {
-  params: { id: string };
-}
-
-export async function GET(req: NextRequest, context: { params: Params["params"] }) {
+export async function GET(
+  req: NextRequest,
+  context: { params: { id: string } }
+) {
   try {
     await connectDB();
 
-    const { id } = context.params;
+    const { id } = context.params; 
     const product = await Product.findById(id);
 
     if (!product) {
