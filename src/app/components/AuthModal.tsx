@@ -51,6 +51,8 @@ export default function AuthModal() {
             return false;
         }
 
+        if(loading) return <h1>Loading</h1>
+
         return true;
     };
 
