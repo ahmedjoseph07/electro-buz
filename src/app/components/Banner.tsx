@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Info, ShoppingBag } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import React from 'react';
 import { Typewriter } from "react-simple-typewriter";
 
@@ -39,10 +40,14 @@ const Banner = () => {
 
                     {/* Buttons */}
                     <div className="flex gap-4 items-center justify-center">
-                        <Button>
-                           <ShoppingBag/> Shop Now
-                        </Button>
-                        <Button variant="neutral"> <Info/> Learn More</Button>
+                        <Link href="/products">
+                            <Button>
+                                <ShoppingBag /> Shop Now
+                            </Button>
+                        </Link>
+                        <Link href="/blogs">
+                            <Button variant="neutral"> <Info /> Learn More</Button>
+                        </Link>
                     </div>
                 </div>
 

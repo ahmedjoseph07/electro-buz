@@ -2,13 +2,13 @@
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import { ProductDoc } from "@/models/Product";
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { InfoIcon, MoreVertical } from "lucide-react";
 
 export default function Products() {
-
     const [products, setProducts] = useState<ProductDoc[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -28,10 +28,14 @@ export default function Products() {
         fetchProducts();
     }, []);
 
-    if (loading) return <div>Loading</div>;
-    if (products.length === 0) return <div className="text-center py-20 text-gray-500">No products found.</div>;
+    if (loading)
+        return <div className="text-center py-20 text-gray-500">Loading...</div>;
+
+    if (products.length === 0)
+        return <div className="text-center py-20 text-gray-500">No products found.</div>;
+
     return (
-        <section className="py-10 mt-20 bg-white space-y-10 flex flex-col items-center px-6">
+        <section className="py-10 mt-20 bg-white space-y-10 flex flex-col items-center px-4 sm:px-6">
             {/* --- Header --- */}
             <div className="text-center max-w-2xl">
                 <h2 className="text-3xl font-bold text-gray-800">
@@ -43,39 +47,63 @@ export default function Products() {
             </div>
 
             {/* --- Product Grid --- */}
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto w-full">
-                
-                    {products.map((p) => (
-                        <Card
-                            key={p._id}
-                            className="group cursor-pointer border-2 transition-all duration-300 
-                                   hover:-translate-x-2 hover:translate-y-2 hover:shadow-[0_0_0]
-                                   active:translate-y-0 active:shadow-none"
-                        >
-                            <div className="overflow-hidden rounded-t-2xl">
-                                <Image
-                                    width={300}
-                                    height={300}
-                                    src={p.image || `https://via.placeholder.com/300x300?text=No+Image`}
-                                    alt={p.title}
-                                    className="w-full h-56 object-cover transition-transform duration-500 group-hover:scale-105"
-                                />
-                            </div>
-                            <CardHeader className="text-center mt-2">
-                                <CardTitle className="text-lg font-semibold text-cyan-600">{p.title}</CardTitle>
-                                <CardDescription className="text-gray-600 text-sm">{p.description}</CardDescription>
-                            </CardHeader>
-                            <CardContent className="flex justify-between items-center px-6 pb-4 mt-auto">
-                                <span className="text-xl font-extrabold text-cyan-600">&#2547;{p.price} {p.id}</span>
-                                <Button className="flex items-center gap-2">
-                                    <ShoppingCart className="w-4 h-4" />
-                                    Add to Cart
-                                </Button>
-                            </CardContent>
-                        </Card>
-                    ))}
-            </div>
+            <div
+                className="grid gap-6 
+                    grid-cols-2 
+                    sm:grid-cols-2 
+                    md:grid-cols-3 
+                    lg:grid-cols-4 
+                    max-w-7xl mx-auto w-full"
+            >
+                {products.map((p) => (
+                    <Card
+                        key={p._id}
+                        className="group transition-all duration-300 
+                       hover:-translate-x-1 hover:translate-y-1 hover:shadow-lg 
+                       rounded-2xl flex flex-col justify-between aspect-square"
+                    >
+                        {/* --- Image --- */}
+                        <div className="overflow-hidden flex justify-center items-center bg-gray-100 h-1/2 rounded-t-2xl">
+                            <Image
+                                width={300}
+                                height={300}
+                                src={p.image || "https://via.placeholder.com/300x300?text=No+Image"}
+                                alt={p.title}
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                loading="lazy"
+                            />
+                        </div>
 
+                        {/* --- Content --- */}
+                        <div className="flex flex-col justify-between flex-1">
+                            <CardHeader className="text-center px-3">
+                                <CardTitle className="text-base sm:text-lg font-semibold text-cyan-600 line-clamp-1">
+                                    {p.title}
+                                </CardTitle>
+                                <CardDescription className="text-gray-600 text-sm line-clamp-2">
+                                    {p.description}
+                                </CardDescription>
+                            </CardHeader>
+
+                            <CardContent className="flex w-full mt-4 px-4 pb-4">
+                                <div className="flex w-full flex-col sm:flex-row sm:justify-between sm:items-center">
+                                    {/* Price */}
+                                    <span className="text-lg sm:text-xl font-extrabold text-cyan-600 mb-2 sm:mb-0">
+                                        &#2547;{p.price}
+                                    </span>
+
+                                    {/* Details Button */}
+                                    <Link href={`/products/${p._id}`} passHref>
+                                        <Button variant="neutral" size="sm" className="px-3 py-1 w-full">
+                                           <InfoIcon/> Details
+                                        </Button>
+                                    </Link>
+                                </div>
+                            </CardContent>
+                        </div>
+                    </Card>
+                ))}
+            </div>
         </section>
     );
 }

@@ -26,6 +26,9 @@ export default function AuthModal() {
     const [name, setName] = useState("");
     const [isLogin, setIsLogin] = useState(true);
 
+    const [authLoading, setAuthLoading] = useState(false);
+    const [googleLoading, setGoogleLoading] = useState(false);
+
     const validateInputs = () => {
         if (!email.trim() || !password.trim()) {
             toast.warning("Email and password are required", {
@@ -56,6 +59,7 @@ export default function AuthModal() {
 
         if (!validateInputs()) return;
 
+        setAuthLoading(true);
         try {
             if (isLogin) {
                 await dispatch(loginUser({ email, password })).unwrap();
@@ -71,11 +75,14 @@ export default function AuthModal() {
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : "Invalid Credentials";
             toast.warning(message, { icon: <XCircle className="text-red-500 w-5 h-5" /> });
-        };
+        } finally {
+            setAuthLoading(false); 
+        }
     };
 
     // Google Login
     const handleGoogle = async () => {
+        setGoogleLoading(true); 
         try {
             await dispatch(googleLogin()).unwrap();
             toast.success("Signed in with Google", {
@@ -83,9 +90,12 @@ export default function AuthModal() {
             });
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : "Invalid Credentials";
-            toast.warning(message,{ icon: <XCircle className="text-red-500 w-5 h-5" /> });
-        };
-    }
+            toast.warning(message, { icon: <XCircle className="text-red-500 w-5 h-5" /> });
+        } finally {
+            setGoogleLoading(false); 
+        }
+    };
+
     return (
         <Dialog>
             <DialogTrigger asChild>
@@ -131,8 +141,8 @@ export default function AuthModal() {
                                 />
                             </div>
 
-                            <Button type="submit" className="w-full" disabled={loading}>
-                                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Login"}
+                            <Button type="submit" className="w-full" disabled={authLoading || googleLoading}>
+                                {authLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Login"}
                             </Button>
                         </form>
                     </TabsContent>
@@ -174,9 +184,9 @@ export default function AuthModal() {
                             <Button
                                 type="submit"
                                 className="w-full"
-                                disabled={loading}
+                                disabled={authLoading || googleLoading}
                             >
-                                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Sign Up"}
+                                {authLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Sign Up"}
                             </Button>
                         </form>
                     </TabsContent>
@@ -193,9 +203,9 @@ export default function AuthModal() {
                     onClick={handleGoogle}
                     variant="neutral"
                     className="w-full flex items-center justify-center gap-2"
-                    disabled={loading}
+                    disabled={authLoading || googleLoading}
                 >
-                    {loading ? (
+                    {googleLoading ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
                         <Image src="/google.png" width={200} height={200} alt="google" className="w-4 h-4" />

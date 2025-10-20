@@ -5,11 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import Link from 'next/link';
 import Image from 'next/image';
-import { LogOut, MenuSquare, ShoppingCart, XCircle } from 'lucide-react';
+import { LogOut, LogOutIcon, MenuSquare, ShoppingCart, XCircle } from 'lucide-react';
 import AuthModal from './AuthModal';
 import { useAppDispatch, useAppSelector } from '../hooks/reduxHook';
 import { logoutUser } from '@/features/auth/authSlice';
 import { toast } from 'sonner';
+import NavbarCart from './NavbarCart';
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
@@ -36,8 +37,8 @@ export default function Navbar() {
     };
 
     return (
-        <section className='fixed top-0 left-0 bg-white border-cyan-300 border-b-1 w-full px-4 z-50'>
-            <nav className="max-w-7xl mx-auto py-4 gap-6 md:gap-4 flex items-center justify-between">
+        <section className='fixed top-0 left-0 bg-white border-cyan-300 border-b-1 w-full px-10 z-50'>
+            <nav className="max-w-7xl mx-auto py-4 gap-2 md:gap-4 flex items-center justify-between">
                 {/* Logo */}
                 <Link href="/" className="text-2xl font-bold cursor-pointer">
                     <Image
@@ -62,15 +63,14 @@ export default function Navbar() {
                             {link.title}
                         </Link>
                     ))}
-                    <Button variant="noShadow" className='rounded-full'><ShoppingCart className="hover:scale-110" />Cart</Button>
+                    <NavbarCart />
                     <div>
                         {
                             user ? (<div>
                                 <div className="flex items-center gap-3">
                                     <Image width={200} height={200} src={user.photoURL || "/avatar-placeholder.png"} alt="avatar" className="w-8 h-8 rounded-full" />
-                                    <span className="text-sm">{user.displayName || user.email}</span>
                                     <Button variant="neutral" onClick={handleLogout}>
-                                        Logout
+                                       <LogOutIcon/>  Logout
                                     </Button>
                                 </div>
                             </div>) : (
@@ -84,11 +84,14 @@ export default function Navbar() {
                 {/* Mobile Menu */}
                 <div className="md:hidden">
                     <Sheet open={isOpen} onOpenChange={setIsOpen}>
-                        <SheetTrigger asChild>
-                            <Button variant="noShadow" className="mt-3">
-                                <MenuSquare />
-                            </Button>
-                        </SheetTrigger>
+                        <div className='flex gap-4'>
+                            <NavbarCart />
+                            <SheetTrigger asChild>
+                                <Button variant="noShadow" className="mt-3">
+                                    <MenuSquare />
+                                </Button>
+                            </SheetTrigger>
+                        </div>
                         <SheetContent side="right" className="w-64 p-6">
                             <div className="border-b-2 mb-4">
                                 <SheetTitle className="font-extrabold">Menu</SheetTitle>
@@ -105,16 +108,16 @@ export default function Navbar() {
                                     </Link>
                                 ))}
 
-                                <div className={`flex ${user && "flex-col"} justify-center gap-4`}>
-                                    <Button className={`w-1/2 ${user && "w-full"}`}><ShoppingCart /> Cart</Button>
+                                <div className={`flex ${user && "flex-col"}  gap-4`}>
+
                                     <div>
                                         {
                                             user ? (<div>
-                                                <div className="flex items-center gap-3">
-                                                    <Image src={user.photoURL || "/avatar-placeholder.png"} alt="avatar" className="w-8 h-8 rounded-full" />
+                                                <div className="flex gap-3">
+                                                    <Image width={200} height={200} src={user.photoURL || "/avatar-placeholder.png"} alt="avatar" className="w-8 h-8 rounded-full" />
                                                     <span className="text-sm">{user.displayName || user.email}</span>
                                                     <Button variant="neutral" onClick={handleLogout}>
-                                                        Logout
+                                                       <LogOutIcon/> Logout
                                                     </Button>
                                                 </div>
                                             </div>) : (

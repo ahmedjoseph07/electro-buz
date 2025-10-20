@@ -27,14 +27,20 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${publicSans.className} antialiased`}
+        className={`${publicSans.className} antialiased  min-h-screen flex flex-col`}
       >
         <Providers>
-          <Navbar />
-          {children}
-          <Footer />
+          <div className="fixed top-0 left-0 right-0 z-50">
+            <Navbar />
+          </div>
+          <main className="flex-1">
+            {children}
+          </main>
+          <div>
+            <Footer />
+          </div>
         </Providers>
-        <Toaster duration={2000} position="top-right" />
+        <Toaster duration={2000} position="top-left" />
       </body>
     </html>
   );

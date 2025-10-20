@@ -52,7 +52,7 @@ const Featured = () => {
     return (
         <section className="py-14 bg-gray-50 ">
             <h2 className="text-3xl font-bold text-center mb-4">
-                Featured <span className="text-cyan-500">Products ⚡</span>
+                Explore Our <span className="text-cyan-500">Products ⚡</span>
             </h2>
 
             <p className="max-w-3xl text-center text-gray-500 mx-6 md:mx-auto mb-10">
