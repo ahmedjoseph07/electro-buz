@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Product from "@/models/Product";
 
-export async function GET(
-  req: NextRequest,
-  context: { params: { id: string } }
-) {
+export const GET = async (
+  req: Request,
+  context: { params: { id: string } } 
+) => {
   try {
     await connectDB();
 
@@ -21,4 +21,4 @@ export async function GET(
     console.error("Error fetching product:", error);
     return NextResponse.json({ message: "Failed to fetch product" }, { status: 500 });
   }
-}
+};
