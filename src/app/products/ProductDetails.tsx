@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Delete, DeleteIcon, Minus, Plus, ShoppingCart, Star, Trash2 } from "lucide-react";
+import { Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
 import { addToCart, decrementQuantity, removeFromCart } from "@/features/cart/cartSlice";
 import { useAppDispatch, useAppSelector } from "../hooks/reduxHook";
 

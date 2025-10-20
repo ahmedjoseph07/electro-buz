@@ -6,7 +6,7 @@ import Image from "next/image";
 import { ProductDoc } from "@/models/Product";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { InfoIcon, MoreVertical } from "lucide-react";
+import { InfoIcon} from "lucide-react";
 
 export default function Products() {
     const [products, setProducts] = useState<ProductDoc[]>([]);

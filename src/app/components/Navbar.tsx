@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import Link from 'next/link';
 import Image from 'next/image';
-import { LogOut, LogOutIcon, MenuSquare, ShoppingCart, XCircle } from 'lucide-react';
+import { LogOut, LogOutIcon, MenuSquare,  XCircle } from 'lucide-react';
 import AuthModal from './AuthModal';
 import { useAppDispatch, useAppSelector } from '../hooks/reduxHook';
 import { logoutUser } from '@/features/auth/authSlice';

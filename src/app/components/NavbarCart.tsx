@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 
 export default function NavbarCart() {
   const items = useAppSelector((s) => s.cart.items);
-  const totalQty = items.reduce((sum, it) => sum + it.quantity, 0);
+   const distinctCount = items.length;
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -25,9 +25,9 @@ export default function NavbarCart() {
   return (
     <Link href="/cart" className="relative inline-flex items-center">
       <ShoppingCart className="w-6 h-6 text-cyan-600" />
-      {totalQty > 0 && (
-        <span className="absolute top-2 md:-top-2 font-xs -right-2 bg-cyan-500 text-xs rounded-full w-5 h-5 flex items-center justify-center">
-          {totalQty}
+      {distinctCount > 0 && (
+        <span className="absolute -top-2 -right-2 bg-cyan-500 text-xs rounded-full w-5 h-5 flex items-center justify-center">
+          {distinctCount}
         </span>
       )}
     </Link>
