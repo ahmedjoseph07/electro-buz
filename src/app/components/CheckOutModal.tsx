@@ -22,7 +22,6 @@ import {
     Phone,
     MapPin,
 } from "lucide-react";
-import Link from "next/link";
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 

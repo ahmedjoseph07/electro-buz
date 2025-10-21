@@ -42,8 +42,8 @@ export default function CartPage() {
               Your Cart is Empty
             </CardTitle>
             <CardDescription className="text-gray-600 italic max-w-sm mx-auto">
-              “Looks like you haven't added anything yet.
-              Let's explore some electronics and IoT components!”
+              “Looks like you havent added anything yet.
+              Let&apos;s explore some electronics and IoT components!”
             </CardDescription>
             
           </CardHeader>

@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, ArrowBigRight, Home } from "lucide-react";
+import { AlertTriangle, Home } from "lucide-react";
 import Link from "next/link";
 
 export default function NotFound() {
@@ -24,8 +24,8 @@ export default function NotFound() {
                         Page Not Found
                     </CardTitle>
                     <CardDescription className="text-gray-600 italic max-w-sm mx-auto">
-                        “Oops! The page you're looking for doesn't exist or has been moved.”
-                        Let's get you back on track ⚡
+                        “Oops! The page you&apos;re looking for doesn&apos;t exist or has been moved.”
+                        Let&apos;s get you back on track ⚡
                     </CardDescription>
                 </CardHeader>
 
