@@ -5,8 +5,11 @@ import { removeFromCart, setQuantity, clearCart } from "@/features/cart/cartSlic
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useAppDispatch, useAppSelector } from "../hooks/reduxHook";
-import { ArrowRightCircle, CircleX, Minus, Plus, Trash } from "lucide-react";
+import { ArrowRightCircle, CircleX, Minus, Plus, ShoppingBag, ShoppingCart, Trash } from "lucide-react";
 import CheckoutModal from "../components/CheckOutModal";
+import Loader from "@/components/ui/loader";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
 
 export default function CartPage() {
   const dispatch = useAppDispatch();
@@ -18,11 +21,45 @@ export default function CartPage() {
   useEffect(() => setIsClient(true), []);
 
   if (!isClient) {
-    return <div className="py-20 text-center text-gray-500">Loading...</div>;
+    return <div><Loader /></div>;
   }
 
   if (!items.length) {
-    return <div className="py-20 text-center text-gray-500">Your cart is empty.</div>;
+    return (
+      <div className="py-10 min-h-screen bg-white flex justify-center items-center">
+        <Card
+          className="w-full max-w-md text-center border-2 transition-all duration-300 
+                   hover:-translate-x-2 hover:translate-y-2 hover:shadow-[0_0_0] 
+                   active:translate-y-0 active:shadow-none"
+        >
+          <CardHeader className="flex flex-col items-center space-y-3">
+            <div className="flex justify-center mb-2">
+              <div className="bg-cyan-100 p-4 rounded-full border-2 border-cyan-500">
+                <ShoppingCart className="w-10 h-10 text-cyan-600" />
+              </div>
+            </div>
+            <CardTitle className="text-xl font-bold text-cyan-600">
+              Your Cart is Empty
+            </CardTitle>
+            <CardDescription className="text-gray-600 italic max-w-sm mx-auto">
+              “Looks like you haven't added anything yet.
+              Let's explore some electronics and IoT components!”
+            </CardDescription>
+            
+          </CardHeader>
+
+          <CardContent>
+            <div className="flex justify-center mt-4">
+              <Link href="/products">
+                <Button>
+                 <ShoppingBag/> Products
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (

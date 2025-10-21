@@ -7,6 +7,7 @@ import { ProductDoc } from "@/models/Product";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { InfoIcon} from "lucide-react";
+import Loader from "@/components/ui/loader";
 
 export default function Products() {
     const [products, setProducts] = useState<ProductDoc[]>([]);
@@ -28,8 +29,7 @@ export default function Products() {
         fetchProducts();
     }, []);
 
-    if (loading)
-        return <div className="text-center py-20 text-gray-500">Loading...</div>;
+    if (loading) return <Loader />;
 
     if (products.length === 0)
         return <div className="text-center py-20 text-gray-500">No products found.</div>;
