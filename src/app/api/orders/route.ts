@@ -32,7 +32,7 @@ export const POST = async (req: NextRequest) => {
     });
 
     return NextResponse.json(
-      { message: "Order created successfully", orderId: newOrder._id },
+      { message: "Order created successfully", orderId: newOrder._id, order:newOrder },
       { status: 201 }
     );
   } catch (error) {

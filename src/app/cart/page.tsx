@@ -45,7 +45,6 @@ export default function CartPage() {
               “Looks like you havent added anything yet.
               Let&apos;s explore some electronics and IoT components!”
             </CardDescription>
-            
           </CardHeader>
 
           <CardContent>

@@ -6,6 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
 import { addToCart, decrementQuantity, removeFromCart } from "@/features/cart/cartSlice";
 import { useAppDispatch, useAppSelector } from "../hooks/reduxHook";
+import { useEffect, useState } from "react";
+import Loader from "@/components/ui/loader";
 
 interface ProductDetailsProps {
   product: {
@@ -23,6 +25,11 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
   const cartItem = useAppSelector((state) =>
     state.cart.items.find((item) => item._id === product._id)
   );
+
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => setIsClient(true), []);
+
+  if (!isClient) return <Loader />;
 
   return (
     <section className="py-10 mt-20 flex flex-col items-center px-6">
@@ -66,14 +73,14 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 
           {/* Cart Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 mt-4">
-            {cartItem ? (
+            {isClient && cartItem ? (
               <div className="flex items-center gap-3 border border-cyan-500 rounded-lg p-3">
                 <Button
                   size="sm"
                   className="px-3"
                   onClick={() => dispatch(decrementQuantity(product._id))}
                 >
-                  <Minus/>
+                  <Minus />
                 </Button>
 
                 <span className="text-lg font-semibold">
@@ -85,7 +92,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                   className="px-3"
                   onClick={() => dispatch(addToCart(product))}
                 >
-                  <Plus/>
+                  <Plus />
                 </Button>
 
                 <Button
@@ -94,7 +101,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                   className="ml-2"
                   onClick={() => dispatch(removeFromCart(product._id))}
                 >
-                <Trash2/>
+                  <Trash2 />
                 </Button>
               </div>
             ) : (
@@ -124,7 +131,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           </TabsContent>
         </Tabs>
       </div>
-      
+
     </section>
   );
 }
