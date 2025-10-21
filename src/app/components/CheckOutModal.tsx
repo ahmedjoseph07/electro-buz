@@ -26,7 +26,7 @@ import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 import { jsPDF } from "jspdf";
 
-import { OrderDoc, OrderItem } from "@/models/Orders";
+import { OrderItem } from "@/models/Orders";
 
 interface CheckoutModalProps {
     isOpen: boolean;
@@ -102,7 +102,7 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
 
         // --- Items ---
         let y = startY + 14;
-        order.items.forEach((item: any, idx: number) => {
+        order.items.forEach((item: OrderItem, idx: number) => {
             // Item number
             doc.text(`${idx + 1}`, 18, y);
 
