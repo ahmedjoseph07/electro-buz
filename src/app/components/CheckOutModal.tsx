@@ -26,10 +26,26 @@ import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 import { jsPDF } from "jspdf";
 
+import { OrderDoc, OrderItem } from "@/models/Orders";
+
 interface CheckoutModalProps {
     isOpen: boolean;
     onClose: () => void;
 }
+
+interface OrderForInvoice {
+    _id: string;
+    items: OrderItem[];
+    total: number;
+    customer: {
+        name: string;
+        email?: string;
+        phone?: string;
+        address?: string;
+    };
+}
+
+
 
 export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
     const items = useAppSelector((s) => s.cart.items);
@@ -44,7 +60,7 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
         address: "",
     });
 
-    const generateInvoice = (order: any) => {
+    const generateInvoice = (order: OrderForInvoice) => {
         const doc = new jsPDF();
 
         // --- Header ---
@@ -72,7 +88,7 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
         if (order.customer.address) doc.text(`Address: ${order.customer.address}`, 20, 66);
 
         // --- Items Table Header ---
-        let startY = 80;
+        const startY = 80;
         doc.setFillColor(200, 230, 255); // light cyan
         doc.rect(15, startY, 180, 8, "F");
 
@@ -136,7 +152,7 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
 
             if (!res.ok) throw new Error("Order failed");
 
-            const data = await res.json();
+            const data: { message: string; orderId: string; order?: OrderForInvoice } = await res.json();
             toast.success(`Order placed successfully!`, {
                 icon: <CheckCircle2 className="text-green-500 w-5 h-5" />,
             });
@@ -144,8 +160,7 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
             onClose();
 
             // Generate Invoice
-            console.log(data)
-            generateInvoice(data.order);
+            if (data.order) generateInvoice(data.order);
         } catch (err) {
             console.error(err);
             toast.warning("Failed to place order.", {
