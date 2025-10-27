@@ -26,7 +26,7 @@ import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 import { jsPDF } from "jspdf";
 
-import { OrderItem } from "@/models/Orders";
+import { OrderItem } from "@/models/Order";
 
 interface CheckoutModalProps {
     isOpen: boolean;

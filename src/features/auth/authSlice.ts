@@ -13,6 +13,7 @@ export interface AuthState {
     email: string | null;
     displayName?: string | null;
     photoURL?: string | null;
+    role?: "user" | "admin";
   } | null;
   loading: boolean;
   error: string | null;
@@ -31,12 +32,25 @@ export const registerUser = createAsyncThunk(
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      //Update Profile logic here TODO
+
+      const res = await fetch("/api/users/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          uid: user.uid,
+          email: user.email,
+          displayName: displayName || user.displayName,
+          photoURL: user.photoURL,
+        }),
+      });
+      const data = await res.json();
+
       return {
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName || displayName || null,
-        photoURL: user.photoURL || null,
+        uid: data.user.uid,
+        email: data.user.email,
+        displayName: data.user.displayName,
+        photoURL: data.user.photoURL,
+        role: data.user.role,
       };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Registration failed";
@@ -68,11 +82,25 @@ export const googleLogin = createAsyncThunk("auth/googleLogin", async (_, thunkA
   try {
     const result = await signInWithPopup(auth, googleProvider);
     const user = result.user;
+
+    const res = await fetch("/api/users/save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+      }),
+    });
+    const data = await res.json();
+
     return {
-      uid: user.uid,
-      email: user.email,
-      displayName: user.displayName || null,
-      photoURL: user.photoURL || null,
+      uid: data.user.uid,
+      email: data.user.email,
+      displayName: data.user.displayName,
+      photoURL: data.user.photoURL,
+      role: data.user.role,
     };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Google login failed";
