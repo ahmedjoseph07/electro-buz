@@ -173,89 +173,112 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-sm p-6">
+            <DialogContent className="w-full max-w-lg sm:max-w-md p-4 sm:p-6">
                 <DialogHeader>
-                    <DialogTitle className="text-center text-2xl font-bold text-gray-800">
+                    <DialogTitle className="text-start text-2xl font-bold text-gray-800">
                         Checkout — <span className="text-cyan-500">COD Only</span>
                     </DialogTitle>
                 </DialogHeader>
 
                 <div className="space-y-4 mt-2">
-                    {/* Name */}
-                    <div className="relative">
-                        <User className="absolute left-3 top-3.5 text-cyan-500 w-4 h-4" />
-                        <Input
-                            type="text"
-                            placeholder="Full Name"
-                            value={customer.name}
-                            onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
-                            className="pl-9 border-cyan-500 focus:border-0"
-                        />
+
+                    {/* Order Details */}
+                    <div className="border border-cyan-500 rounded-lg p-4 w-full">
+                        <h3 className="text-lg font-semibold text-gray-500 mb-2">Order Details</h3>
+                        {items.length === 0 ? (
+                            <p className="text-gray-500 text-sm">Your cart is empty.</p>
+                        ) : (
+                            <div
+                                className={`space-y-2 ${items.length >= 3 ? "max-h-48 overflow-y-auto" : ""}`}
+                            >
+                                {items.map((item, idx) => (
+                                    <div
+                                        key={idx}
+                                        className="flex justify-between items-center border-b border-gray-100 pb-2 last:border-b-0"
+                                    >
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-gray-700 text-sm truncate">{item.title}</p>
+                                            <p className="text-gray-400 text-xs">
+                                                Qty: {item.quantity} x ৳{item.price.toFixed(2)}
+                                            </p>
+                                        </div>
+                                        <p className="text-gray-800 font-medium">
+                                            ৳{(item.price * item.quantity).toFixed(2)}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
-                    {/* Email */}
-                    <div className="relative">
-                        <Mail className="absolute left-3 top-3.5 text-cyan-500 w-4 h-4" />
-                        <Input
-                            type="email"
-                            placeholder="Email"
-                            value={customer.email}
-                            onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
-                            className="pl-9 border-cyan-500 focus:border-0"
-                        />
-                    </div>
+                    {/* Inputs */}
+                    <div className="space-y-3">
+                        <div className="relative w-full">
+                            <User className="absolute left-3 top-3.5 text-cyan-500 w-4 h-4" />
+                            <Input
+                                type="text"
+                                placeholder="Full Name"
+                                value={customer.name}
+                                onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
+                                className="pl-9 border-cyan-500 focus:border-0 w-full"
+                            />
+                        </div>
 
-                    {/* Phone */}
-                    <div className="relative">
-                        <Phone className="absolute left-3 top-3.5 text-cyan-500 w-4 h-4" />
-                        <Input
-                            type="text"
-                            placeholder="Phone"
-                            value={customer.phone}
-                            onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
-                            className="pl-9 border-cyan-500 focus:border-0"
-                        />
-                    </div>
+                        <div className="relative w-full">
+                            <Mail className="absolute left-3 top-3.5 text-cyan-500 w-4 h-4" />
+                            <Input
+                                type="email"
+                                placeholder="Email"
+                                value={customer.email}
+                                onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
+                                className="pl-9 border-cyan-500 focus:border-0 w-full"
+                            />
+                        </div>
 
-                    {/* Address */}
-                    <div className="relative">
-                        <MapPin className="absolute left-3 top-3.5 text-cyan-500 w-4 h-4" />
-                        <Textarea
-                            placeholder="Delivery Address"
-                            className="w-full border rounded-lg p-2 pl-9 border-cyan-500 focus:border-0"
-                            value={customer.address}
-                            onChange={(e) => setCustomer({ ...customer, address: e.target.value })}
-                        />
+                        <div className="relative w-full">
+                            <Phone className="absolute left-3 top-3.5 text-cyan-500 w-4 h-4" />
+                            <Input
+                                type="text"
+                                placeholder="Phone"
+                                value={customer.phone}
+                                onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
+                                className="pl-9 border-cyan-500 focus:border-0 w-full"
+                            />
+                        </div>
+
+                        <div className="relative w-full">
+                            <MapPin className="absolute left-3 top-3.5 text-cyan-500 w-4 h-4" />
+                            <Textarea
+                                placeholder="Delivery Address"
+                                className="w-full border rounded-lg p-2 pl-9 border-cyan-500 focus:border-0"
+                                value={customer.address}
+                                onChange={(e) => setCustomer({ ...customer, address: e.target.value })}
+                            />
+                        </div>
                     </div>
 
                     {/* Total */}
-                    <div className="mt-4 font-semibold text-center">
+                    <div className="mt-4 font-semibold text-center sm:text-left">
                         Total: ৳{total.toFixed(2)} (Cash on Delivery)
                     </div>
 
-                    {/* Confirm Order */}
-                    <Button
-                        className="w-full mt-2 flex items-center justify-center gap-2"
-                        disabled={loading}
-                        onClick={handlePlaceOrder}
-                    >
-                        {loading ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                            <>
-                                <ShoppingBag className="w-4 h-4" /> Confirm Order
-                            </>
-                        )}
-                    </Button>
-
-                    {/* Cancel */}
-                    <Button
-                        onClick={onClose}
-                        variant="neutral"
-                        className="w-full flex items-center justify-center gap-2 mt-2"
-                    >
-                        <X className="w-4 h-4" /> Cancel
-                    </Button>
+                    {/* Buttons */}
+                    <div className="flex flex-col sm:flex-row gap-2 mt-2 w-full">
+                        <Button
+                            className="flex-1 flex items-center justify-center gap-2"
+                            disabled={loading}
+                            onClick={handlePlaceOrder}
+                        >
+                            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><ShoppingBag className="w-4 h-4" /> Confirm Order</>}
+                        </Button>
+                        <Button
+                            onClick={onClose}
+                            variant="neutral"
+                            className="flex-1 flex items-center justify-center gap-2"
+                        >
+                            <X className="w-4 h-4" /> Cancel
+                        </Button>
+                    </div>
 
                 </div>
             </DialogContent>
