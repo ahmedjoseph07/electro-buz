@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Cpu, Cog, Zap, Loader2 } from "lucide-react";
 import Loader from "@/components/ui/loader";
+import Image from "next/image";
 
 interface Product {
     _id: string;
@@ -55,14 +56,14 @@ const Featured = () => {
         fetchProducts();
     }, []);
 
-    if(loading) return <Loader/>
+    if (loading) return <Loader />
 
     // Filter products by category (frontend filtering)
     const filteredProducts = products.filter(
         (p) => p.category?.toLowerCase() === activeCategory.toLowerCase()
     );
 
-    
+
 
     return (
         <section className="py-14 bg-gray-50">
@@ -110,7 +111,9 @@ const Featured = () => {
                                             className="group cursor-pointer text-center border-2 transition-all duration-300 hover:translate-y-1 hover:-translate-x-1 hover:shadow-lg"
                                         >
                                             <CardHeader className="flex flex-col items-center space-y-2">
-                                                <img
+                                                <Image
+                                                    width={300}
+                                                    height={300}
                                                     src={item.image}
                                                     alt={item.title}
                                                     className="w-full h-48 object-cover rounded-md"
