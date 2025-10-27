@@ -5,11 +5,17 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { ProductDoc } from "@/models/Product";
 import { useEffect, useState } from "react";
-import { ShoppingCart, Plus, Minus, Trash2 } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2, DollarSign, Search } from "lucide-react";
 import Loader from "@/components/ui/loader";
 import { useAppDispatch, useAppSelector } from "../hooks/reduxHook";
 import { addToCart, removeFromCart, decrementQuantity } from "@/features/cart/cartSlice";
 import { useRouter } from "next/navigation";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 
 export default function Products() {
   const [products, setProducts] = useState<ProductDoc[]>([]);
@@ -19,6 +25,18 @@ export default function Products() {
 
   const cartItems = useAppSelector((state) => state.cart.items);
   const [isClient, setIsClient] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [priceFilter, setPriceFilter] = useState<"all" | "low" | "medium" | "high">("all");
+
+  const filteredProducts = products.filter((p) =>
+    p.title.toLowerCase().includes(searchTerm.toLowerCase())
+  ).filter((p) => {
+    if (priceFilter === "low") return p.price < 50;
+    if (priceFilter === "medium") return p.price >= 50 && p.price <= 200;
+    if (priceFilter === "high") return p.price > 200;
+    return true; // all
+  });
+
 
   useEffect(() => {
     setIsClient(true);
@@ -61,6 +79,37 @@ export default function Products() {
         </p>
       </div>
 
+      <div className="flex flex-col sm:flex-row gap-4 mb-6 w-full max-w-7xl justify-between items-center">
+        {/* Search */}
+        <div className="relative w-full sm:w-1/2">
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-10 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+          />
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <Search/>
+          </span>
+        </div>
+
+        {/* Price Filter Dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger className="flex cursor-pointer items-center gap-2 border border-gray-300 rounded-lg px-4 py-2">
+            <span><DollarSign/></span>
+            {priceFilter === "all" ? "Filter by Price" : priceFilter}
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="cursor-pointer">
+            <DropdownMenuItem className="cursor-pointer" onClick={() => setPriceFilter("all")}>All</DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer" onClick={() => setPriceFilter("low")}>Low (&lt; ৳50)</DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer" onClick={() => setPriceFilter("medium")}>Medium (৳50 - ৳200)</DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer" onClick={() => setPriceFilter("high")}>High (&gt; ৳200)</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+
       {/* Product Grid */}
       <div
         className="grid gap-6
@@ -70,7 +119,7 @@ export default function Products() {
           lg:grid-cols-4 
           max-w-7xl mx-auto w-full"
       >
-        {products.map((p) => {
+        {filteredProducts.map((p) => {
           const cartItem = cartItems.find((item) => item._id === p._id);
 
           return (
