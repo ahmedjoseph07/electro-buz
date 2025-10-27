@@ -11,7 +11,7 @@ export const store = configureStore({
   },
 });
 
-// persist cart -> simple localStorage subscription
+// Simple localStorage subscription
 if (typeof window !== "undefined") {
   store.subscribe(() => {
     try {

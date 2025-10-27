@@ -18,7 +18,6 @@ export default function Navbar() {
     const { user } = useAppSelector((s) => s.auth);
 
     const navLinks = [
-        { title: 'Home', href: '/' },
         { title: 'Products', href: '/products' },
         { title: 'Complain', href: '/complain' },
         { title: 'Contacts', href: '/contacts' },
@@ -78,7 +77,6 @@ export default function Navbar() {
                             )
                         }
                     </div>
-
                 </div>
 
                 {/* Mobile Menu */}
