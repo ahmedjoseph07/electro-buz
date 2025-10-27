@@ -1,116 +1,140 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
     Tabs,
     TabsContent,
     TabsList,
     TabsTrigger,
 } from "@/components/ui/tabs";
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Rocket, Lightbulb, Wrench, Cpu, Radio, Cog } from "lucide-react";
+import {
+    Card,
+    CardHeader,
+    CardTitle,
+    CardDescription,
+    CardContent,
+} from "@/components/ui/card";
+import { Cpu, Cog, Zap, Loader2 } from "lucide-react";
+import Loader from "@/components/ui/loader";
+
+interface Product {
+    _id: string;
+    title: string;
+    description: string;
+    price: number;
+    image: string;
+    category: string;
+}
 
 const Featured = () => {
-    const data = {
-        robotics: [
-            {
-                icon: <Wrench className="w-10 h-10 text-cyan-600" />,
-                title: "DIY Drone Kit",
-                desc: "Assemble and fly your own drone using our high-quality motor and controller set.",
-            },
-            {
-                icon: <Lightbulb className="w-10 h-10 text-cyan-600" />,
-                title: "Line Follower Robot",
-                desc: "Perfect for beginners — build an autonomous bot that follows a track using IR sensors.",
-            },
-        ],
-        iot: [
-            {
-                icon: <Rocket className="w-10 h-10 text-cyan-600" />,
-                title: "Smart Home Kit",
-                desc: "Automate lights, fans, and appliances with IoT-based Wi-Fi modules.",
-            },
-            {
-                icon: <Radio className="w-10 h-10 text-cyan-600" />,
-                title: "Weather Station",
-                desc: "Track real-time temperature, humidity, and pressure using IoT sensors.",
-            },
-        ],
-        electronics: [
-            {
-                icon: <Cpu className="w-10 h-10 text-cyan-600" />,
-                title: "Arduino Uno R3",
-                desc: "Build interactive electronics projects and prototypes with this versatile microcontroller.",
-            },
-            {
-                icon: <Cog className="w-10 h-10 text-cyan-600" />,
-                title: "Power Supply Module",
-                desc: "Stable and safe power delivery for all your DIY and embedded electronics builds.",
-            },
-        ],
-    };
+    const [products, setProducts] = useState<Product[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [activeCategory, setActiveCategory] = useState("Microcontroller");
+
+    const categories = [
+        { key: "Microcontroller", icon: <Cpu className="w-5 h-5" />, label: "Microcontroller" },
+        { key: "Actuator", icon: <Cog className="w-5 h-5" />, label: "Actuator" },
+        { key: "Sensor", icon: <Zap className="w-5 h-5" />, label: "Sensor" },
+        { key: "Misc", icon: <Zap className="w-5 h-5" />, label: "Misc" },
+    ];
+
+    // Fetch all products once
+    useEffect(() => {
+        const fetchProducts = async () => {
+            setLoading(true);
+            try {
+                const res = await fetch("/api/products");
+                const data = await res.json();
+                setProducts(data);
+            } catch (err) {
+                console.error("Error fetching products:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProducts();
+    }, []);
+
+    if(loading) return <Loader/>
+
+    // Filter products by category (frontend filtering)
+    const filteredProducts = products.filter(
+        (p) => p.category?.toLowerCase() === activeCategory.toLowerCase()
+    );
+
+    
 
     return (
-        <section className="py-14 bg-gray-50 ">
+        <section className="py-14 bg-gray-50">
             <h2 className="text-3xl font-bold text-center mb-4">
                 Explore Our <span className="text-cyan-500">Products ⚡</span>
             </h2>
 
             <p className="max-w-3xl text-center text-gray-500 mx-6 md:mx-auto mb-10">
-                Discover our best-selling products designed for innovators and makers —
-                from robotics kits to IoT devices and electronic components, we’ve got everything you need.
+                Explore our latest products — from microcontrollers to sensors and actuators,
+                perfect for your next innovation.
             </p>
 
-            <div className="max-w-5xl mx-auto px-6">
-                <Tabs defaultValue="robotics" className="w-full">
+            <div className="max-w-6xl mx-auto px-6">
+                <Tabs
+                    defaultValue={activeCategory}
+                    value={activeCategory}
+                    onValueChange={setActiveCategory}
+                    className="w-full"
+                >
                     {/* Tabs Header */}
-                    <TabsList className="grid grid-cols-3 mb-8 bg-white border shadow-sm">
-                        <TabsTrigger
-                            value="robotics"
-                            className="data-[state=active]:bg-cyan-500 cursor-pointer"
-                        >
-                            Robotics
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="iot"
-                            className="data-[state=active]:bg-cyan-500 cursor-pointer"
-                        >
-                            IoT 
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="electronics"
-                            className="data-[state=active]:bg-cyan-500 cursor-pointer"
-                        >
-                            Electronics
-                        </TabsTrigger>
+                    <TabsList className="grid grid-cols-4 mb-8 bg-white border shadow-sm">
+                        {categories.map((cat) => (
+                            <TabsTrigger
+                                key={cat.key}
+                                value={cat.key}
+                                className="flex items-center gap-2 data-[state=active]:bg-cyan-500  transition-all cursor-pointer"
+                            >
+                                {cat.icon} {cat.label}
+                            </TabsTrigger>
+                        ))}
                     </TabsList>
 
-                    {/* Tab Content — shared design */}
-                    {Object.entries(data).map(([key, items]) => (
-                        <TabsContent key={key} value={key}>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {items.map((item) => (
-                                    <Card
-                                        key={item.title}
-                                        className="group cursor-pointer text-center border-2 transition-all duration-300 
-                                                   hover:-translate-x-2 hover:translate-y-2 hover:shadow-[0_0_0] 
-                                                   active:translate-y-0 active:shadow-none"
-                                    >
-                                        <CardHeader className="flex flex-col items-center space-y-2">
-                                            <div className="transition-transform duration-300 group-hover:scale-110">
-                                                {item.icon}
-                                            </div>
-                                            <CardTitle className="text-lg font-bold text-cyan-600">
-                                                {item.title}
-                                            </CardTitle>
-                                            <CardDescription className="text-gray-600 text-sm">
-                                                {item.desc}
-                                            </CardDescription>
-                                        </CardHeader>
-                                    </Card>
-                                ))}
+                    {/* Tabs Content */}
+                    <TabsContent value={activeCategory}>
+                        {loading ? (
+                            <div className="flex justify-center py-10">
+                                <Loader2 className="w-8 h-8 text-cyan-500 animate-spin" />
                             </div>
-                        </TabsContent>
-                    ))}
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                                {filteredProducts.length > 0 ? (
+                                    filteredProducts.map((item) => (
+                                        <Card
+                                            key={item._id}
+                                            className="group cursor-pointer text-center border-2 transition-all duration-300 hover:translate-y-1 hover:-translate-x-1 hover:shadow-lg"
+                                        >
+                                            <CardHeader className="flex flex-col items-center space-y-2">
+                                                <img
+                                                    src={item.image}
+                                                    alt={item.title}
+                                                    className="w-full h-48 object-cover rounded-md"
+                                                />
+                                                <CardTitle className="text-lg font-semibold text-cyan-600">
+                                                    {item.title}
+                                                </CardTitle>
+                                                <CardDescription className="text-gray-600 text-sm line-clamp-2">
+                                                    {item.description}
+                                                </CardDescription>
+                                                <CardContent>
+                                                    <p className="font-medium text-gray-800 mt-2">${item.price}</p>
+                                                </CardContent>
+                                            </CardHeader>
+                                        </Card>
+                                    ))
+                                ) : (
+                                    <p className="text-center text-gray-500 col-span-full">
+                                        No products found in this category.
+                                    </p>
+                                )}
+                            </div>
+                        )}
+                    </TabsContent>
                 </Tabs>
             </div>
         </section>

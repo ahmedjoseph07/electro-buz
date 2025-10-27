@@ -75,7 +75,7 @@ export default function AuthModal() {
                 });
             }
         } catch (err: unknown) {
-            const message = err instanceof Error ? err.message : "Invalid Credentials";
+            const message = err instanceof Error ? err.message : "Registration failed";
             toast.warning(message, { icon: <XCircle className="text-red-500 w-5 h-5" /> });
         } finally {
             setAuthLoading(false); 
@@ -91,7 +91,7 @@ export default function AuthModal() {
                 icon: <CheckCircle2 className="text-green-500 w-5 h-5" />,
             });
         } catch (err: unknown) {
-            const message = err instanceof Error ? err.message : "Invalid Credentials";
+            const message = err instanceof Error ? err.message : "Google login failed";
             toast.warning(message, { icon: <XCircle className="text-red-500 w-5 h-5" /> });
         } finally {
             setGoogleLoading(false); 
