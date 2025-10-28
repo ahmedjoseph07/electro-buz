@@ -169,7 +169,7 @@ export default function Products() {
                   No Products Found
                 </CardTitle>
                 <CardDescription className="text-gray-600 italic max-w-sm mx-auto">
-                  “We couldn't find any products matching your search or filter.”
+                  “We couldn&apos;t find any products matching your search or filter.”
                 </CardDescription>
               </CardHeader>
             </Card>

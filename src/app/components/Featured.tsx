@@ -16,6 +16,7 @@ import {
 import { Cpu, Cog, Zap, Loader2 } from "lucide-react";
 import Loader from "@/components/ui/loader";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 interface Product {
     _id: string;
@@ -30,6 +31,7 @@ const Featured = () => {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(false);
     const [activeCategory, setActiveCategory] = useState("Microcontroller");
+     const router = useRouter();
 
     const categories = [
         { key: "Microcontroller", icon: <Cpu className="w-5 h-5" />, label: "Microcontroller" },
@@ -62,6 +64,7 @@ const Featured = () => {
     const filteredProducts = products.filter(
         (p) => p.category?.toLowerCase() === activeCategory.toLowerCase()
     );
+
 
 
 
@@ -107,6 +110,7 @@ const Featured = () => {
                                 {filteredProducts.length > 0 ? (
                                     filteredProducts.map((item) => (
                                         <Card
+                                        onClick={() => router.push(`/products/${item._id}`)}
                                             key={item._id}
                                             className="group cursor-pointer text-center border-2 transition-all duration-300 hover:translate-y-1 hover:-translate-x-1 hover:shadow-lg"
                                         >
