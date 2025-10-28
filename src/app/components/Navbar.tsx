@@ -5,17 +5,19 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import Link from 'next/link';
 import Image from 'next/image';
-import { LogOut, LogOutIcon, MenuSquare,  XCircle } from 'lucide-react';
+import { LogOut, LogOutIcon, MenuSquare, XCircle } from 'lucide-react';
 import AuthModal from './AuthModal';
 import { useAppDispatch, useAppSelector } from '../hooks/reduxHook';
 import { logoutUser } from '@/features/auth/authSlice';
 import { toast } from 'sonner';
 import NavbarCart from './NavbarCart';
+import { usePathname } from "next/navigation";
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
     const dispatch = useAppDispatch();
     const { user } = useAppSelector((s) => s.auth);
+    const pathname = usePathname();
 
     const navLinks = [
         { title: 'Products', href: '/products' },
@@ -52,16 +54,20 @@ export default function Navbar() {
 
                 {/* Desktop Menu */}
                 <div className="hidden md:flex gap-6 items-center">
-                    {navLinks.map((link) => (
-                        <Link
-                            key={link.href}
-                            href={link.href}
-                            className="relative font-medium transition-all duration-300 hover:scale-105
-               after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-black after:transition-all after:duration-500 hover:after:w-full"
-                        >
-                            {link.title}
-                        </Link>
-                    ))}
+                    {navLinks.map((link) => {
+                        const isActive: boolean = pathname === link.href;
+                        return (
+                            <Link
+                                key={link.href}
+                                href={link.href}
+                                className={`relative font-medium transition-all duration-300
+          after:absolute after:bottom-0 after:left-0 after:h-[2px] after:transition-all after:duration-500
+          ${isActive ? "after:w-full after:bg-black " : "after:w-0 after:bg-black hover:after:w-full"}`}
+                            >
+                                {link.title}
+                            </Link>
+                        );
+                    })}
                     <NavbarCart />
                     <div>
                         {
@@ -69,7 +75,7 @@ export default function Navbar() {
                                 <div className="flex items-center gap-3">
                                     <Image width={200} height={200} src={user.photoURL || "/avatar-placeholder.png"} alt="avatar" className="w-8 h-8 rounded-full" />
                                     <Button variant="neutral" onClick={handleLogout}>
-                                       <LogOutIcon/>  Logout
+                                        <LogOutIcon />  Logout
                                     </Button>
                                 </div>
                             </div>) : (
@@ -115,7 +121,7 @@ export default function Navbar() {
                                                     <Image width={200} height={200} src={user.photoURL || "/avatar-placeholder.png"} alt="avatar" className="w-8 h-8 rounded-full" />
                                                     <span className="text-sm">{user.displayName || user.email}</span>
                                                     <Button variant="neutral" onClick={handleLogout}>
-                                                       <LogOutIcon/> Logout
+                                                        <LogOutIcon /> Logout
                                                     </Button>
                                                 </div>
                                             </div>) : (

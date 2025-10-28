@@ -13,7 +13,7 @@ import {
     CardDescription,
     CardContent,
 } from "@/components/ui/card";
-import { Cpu, Cog, Zap, Loader2 } from "lucide-react";
+import { Cpu, Cog, Zap, Loader2, MilestoneIcon } from "lucide-react";
 import Loader from "@/components/ui/loader";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -34,10 +34,10 @@ const Featured = () => {
      const router = useRouter();
 
     const categories = [
-        { key: "Microcontroller", icon: <Cpu className="w-5 h-5" />, label: "Microcontroller" },
-        { key: "Actuator", icon: <Cog className="w-5 h-5" />, label: "Actuator" },
-        { key: "Sensor", icon: <Zap className="w-5 h-5" />, label: "Sensor" },
-        { key: "Misc", icon: <Zap className="w-5 h-5" />, label: "Misc" },
+        { key: "Microcontroller", icon: <Cpu className="w-4 h-4" />, label: "Mircrontrollers" },
+        { key: "Actuator", icon: <Cog className="w-4 h-4" />, label: "Actuators" },
+        { key: "Sensor", icon: <Zap className="w-4 h-4" />, label: "Sensors" },
+        { key: "Misc", icon: <MilestoneIcon className="w-4 h-4" />, label: "Misc" },
     ];
 
     // Fetch all products once
@@ -87,7 +87,7 @@ const Featured = () => {
                     className="w-full"
                 >
                     {/* Tabs Header */}
-                    <TabsList className="grid grid-cols-4 mb-8 bg-white border shadow-sm">
+                    <TabsList className="grid grid-cols-2 h-30 md:h-auto grid-rows-2 md:grid-rows-1  mb-8 w-full bg-white  shadow-sm">
                         {categories.map((cat) => (
                             <TabsTrigger
                                 key={cat.key}

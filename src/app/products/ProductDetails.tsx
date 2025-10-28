@@ -8,7 +8,6 @@ import { addToCart, decrementQuantity, removeFromCart } from "@/features/cart/ca
 import { useAppDispatch, useAppSelector } from "../hooks/reduxHook";
 import { useEffect, useState } from "react";
 import Loader from "@/components/ui/loader";
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import Link from "next/link";
 
@@ -58,7 +57,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
   );
 
   return (
-    <section className="py-10 mt-20 flex flex-col items-center px-6 space-y-10">
+    <section className="py-10 bg-white mt-20 flex flex-col items-center px-6 space-y-10">
       {/* Header */}
       <div className="text-center max-w-2xl mb-12">
         <h2 className="text-3xl font-bold text-gray-800">{product.title}</h2>
@@ -157,12 +156,12 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
       <div className="max-w-6xl w-full mt-12 bg-white p-6 rounded-2xl shadow-sm border border-cyan-500">
         <Tabs defaultValue="details">
           <TabsList className="flex justify-center sm:gap-4 md:gap-10 border-b pb-2">
-            <TabsTrigger value="details">Details</TabsTrigger>
-            <TabsTrigger value="diagrams">Diagrams</TabsTrigger>
-            <TabsTrigger value="reviews">Reviews</TabsTrigger>
+            <TabsTrigger className="cursor-pointer" value="spec">Specs</TabsTrigger>
+            <TabsTrigger className="cursor-pointer" value="diagrams">Diagrams</TabsTrigger>
+            <TabsTrigger className="cursor-pointer" value="reviews">Reviews</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="details" className="pt-6 text-gray-700">
+          <TabsContent value="spec" className="pt-6 text-gray-700">
             <p>{product.description}</p>
           </TabsContent>
           <TabsContent value="diagrams" className="pt-6 text-gray-700">

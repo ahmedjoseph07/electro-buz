@@ -115,8 +115,8 @@ export default function AuthModal() {
 
                 <Tabs defaultValue="login" onValueChange={(v) => setIsLogin(v === "login")}>
                     <TabsList className="grid w-full grid-cols-2 mb-4">
-                        <TabsTrigger value="login">Login</TabsTrigger>
-                        <TabsTrigger value="signup">Register</TabsTrigger>
+                        <TabsTrigger className="cursor-pointer" value="login">Login</TabsTrigger>
+                        <TabsTrigger className="cursor-pointer" value="signup">Register</TabsTrigger>
                     </TabsList>
 
                     {/* Login TAB */}
