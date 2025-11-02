@@ -286,7 +286,7 @@ export default function AdminDashboard() {
                                         className="border-cyan-500 focus:border-0"
                                         rows={3}
                                         placeholder="Enter a short description"
-                                        value={(newProduct as any).description || ""}
+                                        value={(newProduct).description || ""}
                                         onChange={(e) =>
                                             setNewProduct({ ...newProduct, description: e.target.value })
                                         }
