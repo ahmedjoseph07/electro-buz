@@ -76,7 +76,7 @@ export default function Products() {
     );
 
   return (
-    <section className="py-10 mt-20 bg-white space-y-10 flex flex-col items-center px-4 sm:px-6">
+    <section className="py-10 px-4 md:px-18 mt-20 bg-white space-y-10 flex flex-col items-center">
       {/* Header*/}
       <div className="text-center max-w-2xl">
         <h2 className="text-3xl font-bold text-gray-800">
@@ -190,7 +190,7 @@ export default function Products() {
                   <Image
                     width={300}
                     height={300}
-                    src={p.image || "https://via.placeholder.com/300x300?text=No+Image"}
+                    src={"https://via.placeholder.com/300x300?text=No+Image"}
                     alt={p.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     loading="lazy"

@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import Link from 'next/link';
 import Image from 'next/image';
-import { LogOut, LogOutIcon, MenuSquare, XCircle } from 'lucide-react';
+import { LayoutDashboard, LogOut, LogOutIcon, MenuSquare, XCircle } from 'lucide-react';
 import AuthModal from './AuthModal';
 import { useAppDispatch, useAppSelector } from '../hooks/reduxHook';
 import { logoutUser } from '@/features/auth/authSlice';
@@ -18,6 +18,27 @@ export default function Navbar() {
     const dispatch = useAppDispatch();
     const { user } = useAppSelector((s) => s.auth);
     const pathname = usePathname();
+    const [role, setRole] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchRole = async () => {
+            if (!user?.uid) return;
+
+            try {
+                const res = await fetch(`/api/users/role?uid=${user.uid}`);
+                if (!res.ok) throw new Error("Failed to fetch role");
+
+                const data = await res.json();
+                setRole(data.role);
+            } catch (error) {
+                console.error("Error fetching role:", error);
+                setRole(null);
+            }
+        };
+
+        fetchRole();
+    }, [user]);
+
 
     const navLinks = [
         { title: 'Products', href: '/products' },
@@ -73,7 +94,19 @@ export default function Navbar() {
                         {
                             user ? (<div>
                                 <div className="flex items-center gap-3">
-                                    <Image width={200} height={200} src={user.photoURL || "/avatar-placeholder.png"} alt="avatar" className="w-8 h-8 rounded-full" />
+                                    {role === "admin" ? (
+                                        <Button asChild>
+                                            <Link href="/admin/dashboard"><LayoutDashboard /> Dashboard</Link>
+                                        </Button>
+                                    ) : (
+                                        <Image
+                                            width={200}
+                                            height={200}
+                                            src={user.photoURL || "/avatar-placeholder.png"}
+                                            alt="avatar"
+                                            className="w-8 h-8 rounded-full"
+                                        />
+                                    )}
                                     <Button variant="neutral" onClick={handleLogout}>
                                         <LogOutIcon />  Logout
                                     </Button>
@@ -117,10 +150,26 @@ export default function Navbar() {
                                     <div>
                                         {
                                             user ? (<div>
-                                                <div className="flex gap-3">
-                                                    <Image width={200} height={200} src={user.photoURL || "/avatar-placeholder.png"} alt="avatar" className="w-8 h-8 rounded-full" />
-                                                    <span className="text-sm">{user.displayName || user.email}</span>
-                                                    <Button variant="neutral" onClick={handleLogout}>
+                                                <div className={`flex flex-col gap-3`}>
+                                                    {role === "admin" ? (
+                                                        <Button onClick={() => setIsOpen(false)} size="sm" asChild>
+                                                            <Link href="/admin/dashboard"><LayoutDashboard /> Dashboard</Link>
+                                                        </Button>
+                                                    ) : (
+                                                        <>
+                                                            <Image
+                                                                width={200}
+                                                                height={200}
+                                                                src={user.photoURL || "/avatar-placeholder.png"}
+                                                                alt="avatar"
+                                                                className="w-8 h-8 rounded-full"
+                                                            />
+                                                            {role === "user" ? <span className="text-sm">{user.displayName || user.email}</span> : <></>}
+                                                        </>
+
+                                                    )}
+
+                                                    <Button size="sm" variant="neutral" onClick={handleLogout}>
                                                         <LogOutIcon /> Logout
                                                     </Button>
                                                 </div>
