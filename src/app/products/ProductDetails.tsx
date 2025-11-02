@@ -20,6 +20,8 @@ interface ProductDetailsProps {
     price: number;
     image?: string;
     category?: string;
+    createdAt?: string | Date;
+    updatedAt?: string | Date;
   };
 }
 
@@ -74,7 +76,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
             className="flex items-center gap-2 justify-center"
             onClick={() => {
               setSearchTerm("");
-              
+
             }}
           >
             <ArrowLeft className="w-4 h-4" /> Go Back
@@ -88,6 +90,14 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
   const similarProducts = allProducts.filter(
     (p) => p.category === product.category && p._id !== product._id
   );
+
+  const serializeProduct = (p: typeof product) => ({
+    ...p,
+    _id: p._id?.toString(),
+    createdAt: p.createdAt ? new Date(p.createdAt).toISOString() : null,
+    updatedAt: p.updatedAt ? new Date(p.updatedAt).toISOString() : null,
+  });
+
 
   return (
     <section className="py-10 bg-white mt-20 flex flex-col items-center px-20 space-y-10">
@@ -150,7 +160,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           {/* Main Product + Similar Products */}
           <div className="flex md:flex-col flex-col-reverse lg:flex-row gap-10 max-w-6xl w-full">
             {/* Similar Products */}
-            {similarProducts.length > 0 && (
+            {similarProducts.length > 0 ? (
               <div className="lg:w-1/3">
                 <h3 className="text-xl font-semibold text-gray-800 mb-4">
                   Similar Products
@@ -168,7 +178,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                             <Image
                               width={80}
                               height={80}
-                              src={"https://via.placeholder.com/80x80?text=No+Image"}
+                              src={p.image || "https://via.placeholder.com/80x80?text=No+Image"}
                               alt={p.title}
                               className="object-contain w-full h-full"
                             />
@@ -190,6 +200,15 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                   ))}
                 </div>
               </div>
+            ) : (
+              <div className="lg:w-1/3 flex border rounded-2xl cursor-pointer border-cyan-500 flex-col items-center justify-center min-h-[200px]">
+                <h3 className="text-xl font-semibold text-gray-800 mb-4">
+                  Similar Products
+                </h3>
+                <p className="text-gray-500 italic text-center">
+                  No similar products found
+                </p>
+              </div>
             )}
 
             {/* Product Info */}
@@ -200,7 +219,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
               {/* Image */}
               <div className="relative w-full md:w-1/2 h-96 md:h-[400px] flex-shrink-0">
                 <Image
-                  src={"https://via.placeholder.com/600x600?text=No+Image+Available"}
+                  src={product.image || "https://via.placeholder.com/400x400?text=No+Image"}
                   alt={product.title}
                   fill
                   className="object-contain rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none"
@@ -244,7 +263,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                       <Button
                         size="sm"
                         className="px-3"
-                        onClick={() => dispatch(addToCart(product))}
+                        onClick={() => dispatch(addToCart(serializeProduct(product)))}
                       >
                         <Plus />
                       </Button>
@@ -260,7 +279,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                   ) : (
                     <Button
                       className="flex items-center gap-2 justify-center"
-                      onClick={() => dispatch(addToCart(product))}
+                      onClick={() => dispatch(addToCart(serializeProduct(product)))}
                     >
                       <ShoppingCart className="w-4 h-4" /> Add to Cart
                     </Button>

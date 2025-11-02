@@ -37,10 +37,13 @@ export default function AdminDashboard() {
         title: "",
         description: "",
         price: "",
+        image:"",
         category: "",
         stock: "",
         featured: false,
     });
+
+
 
 
     useEffect(() => {
@@ -89,7 +92,7 @@ export default function AdminDashboard() {
     // --- Add Product Handler ---
     const handleAddProduct = async () => {
         if (!newProduct.title || !newProduct.price || !newProduct.category) {
-            alert("Please fill all fields");
+           toast.warning("Please fill all fields");
             return;
         }
 
@@ -97,7 +100,7 @@ export default function AdminDashboard() {
             const res = await fetch("/api/products/add", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({...newProduct}),
+                body: JSON.stringify({ ...newProduct }),
             });
 
             const data = await res.json();
@@ -109,6 +112,7 @@ export default function AdminDashboard() {
                     title: "",
                     description: "",
                     price: "",
+                    image: "",
                     category: "",
                     stock: "",
                     featured: false,
@@ -251,13 +255,15 @@ export default function AdminDashboard() {
                     <div className="flex justify-between items-center">
                         <h2 className="text-lg font-semibold">Manage Products</h2>
                         <div className="flex gap-2">
-                            <Button onClick={() => setOpenAddModal(true)} ><Plus /> Add Product</Button>
+                            <Button onClick={() => setOpenAddModal(true)}>
+                                <Plus /> Add Product
+                            </Button>
                             <Button>Feature Product</Button>
                         </div>
                     </div>
 
                     {/* Add Product Modal */}
-                    <Dialog open={openAddModal} onOpenChange={setOpenAddModal}> 
+                    <Dialog open={openAddModal} onOpenChange={setOpenAddModal}>
                         <DialogContent className="max-w-md rounded-2xl border border-cyan-200 shadow-lg">
                             <DialogHeader>
                                 <DialogTitle className="text-xl font-semibold text-cyan-700">
@@ -286,7 +292,7 @@ export default function AdminDashboard() {
                                         className="border-cyan-500 focus:border-0"
                                         rows={3}
                                         placeholder="Enter a short description"
-                                        value={(newProduct).description || ""}
+                                        value={newProduct.description || ""}
                                         onChange={(e) =>
                                             setNewProduct({ ...newProduct, description: e.target.value })
                                         }
@@ -307,16 +313,16 @@ export default function AdminDashboard() {
                                     />
                                 </div>
 
-                                {/* Category (shadcn Select) */}
-                                <div className="border-cyan-500 focus:border-0">
+                                {/* Category */}
+                                <div>
                                     <Label className="text-sm text-gray-700">Category</Label>
-
                                     <Select
-
                                         value={newProduct.category}
-                                        onValueChange={(v) => setNewProduct({ ...newProduct, category: v })}
+                                        onValueChange={(v) =>
+                                            setNewProduct({ ...newProduct, category: v })
+                                        }
                                     >
-                                        <SelectTrigger>
+                                        <SelectTrigger className="border-cyan-500 focus:border-0">
                                             <SelectValue placeholder="Select a category" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -342,32 +348,68 @@ export default function AdminDashboard() {
                                     />
                                 </div>
 
-                                {/* Image Upload */}
+                                {/* Image Upload (Cloudinary Unsigned) */}
                                 <div>
                                     <Label className="text-sm text-gray-700">Product Image</Label>
                                     <Input
                                         className="border-cyan-500 focus:border-0"
                                         type="file"
                                         accept="image/*"
-                                        onChange={(e) => {
+                                        onChange={async (e: React.ChangeEvent<HTMLInputElement>) => {
                                             const file = e.target.files?.[0];
-                                            if (file) {
-                                                const reader = new FileReader();
-                                                reader.onloadend = () =>
-                                                    setNewProduct({
-                                                        ...newProduct,
-                                                        image: reader.result as string,
-                                                    });
-                                                reader.readAsDataURL(file);
+                                            if (!file) return;
+
+                                            const formData = new FormData();
+                                            formData.append("file", file);
+                                            formData.append(
+                                                "upload_preset",
+                                                process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET as string
+                                            );
+                                            formData.append("folder", "products");
+
+                                            try {
+                                                toast.loading("Uploading image...");
+                                                const res = await fetch(
+                                                    `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+                                                    {
+                                                        method: "POST",
+                                                        body: formData,
+                                                    }
+                                                );
+
+                                                const data = await res.json();
+                                                toast.dismiss();
+                                                if (data.secure_url) {
+                                                    setNewProduct((prev) => ({ ...prev, image: data.secure_url }));
+                                                    toast.success("Image uploaded successfully!");
+                                                } else {
+                                                    toast.error("Upload failed!");
+                                                }
+                                            } catch (err) {
+                                                toast.dismiss();
+                                                toast.error("Image upload failed!");
+                                                console.error(err);
                                             }
                                         }}
                                     />
+
+                                    {/* Preview */}
                                     {newProduct.image && (
-                                        <img
-                                            src={newProduct.image}
-                                            alt="Preview"
-                                            className="mt-2 w-24 h-24 object-cover rounded-md border"
-                                        />
+                                        <div className="mt-3 flex items-center gap-3">
+                                            <img
+                                                src={newProduct?.image}
+                                                alt="Preview"
+                                                className="w-24 h-24 object-cover rounded-md border border-cyan-200 shadow-sm"
+                                            />
+                                            <Button
+                                                size="sm"
+                                                onClick={() =>
+                                                    setNewProduct((prev) => ({ ...prev, image: "" }))
+                                                }
+                                            >
+                                                Remove
+                                            </Button>
+                                        </div>
                                     )}
                                 </div>
 
@@ -393,8 +435,7 @@ export default function AdminDashboard() {
                         </DialogContent>
                     </Dialog>
 
-
-                    {/* Table */}
+                    {/* Product Table */}
                     <ScrollArea className="h-[400px] w-full">
                         <Table>
                             <TableHeader>

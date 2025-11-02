@@ -190,7 +190,7 @@ export default function Products() {
                   <Image
                     width={300}
                     height={300}
-                    src={"https://via.placeholder.com/300x300?text=No+Image"}
+                    src={p.image || "/placeholder.png"}
                     alt={p.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     loading="lazy"
