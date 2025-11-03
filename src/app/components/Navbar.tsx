@@ -42,8 +42,7 @@ export default function Navbar() {
 
     const navLinks = [
         { title: 'Products', href: '/products' },
-        { title: 'Complain', href: '/complain' },
-        { title: 'Contacts', href: '/contacts' },
+        { title: 'Contact Us', href: '/contacts' },
     ];
 
     const handleLogout = async () => {

@@ -116,6 +116,38 @@ export default function AdminDashboard() {
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [openOrderModal, setOpenOrderModal] = useState(false);
 
+    // --- Analytics State ---
+    const [stats, setStats] = useState({
+        totalOrders: 0,
+        pendingOrders: 0,
+        totalProducts: 0,
+        totalUsers: 0,
+        totalRevenue: 0,
+        lastMonthRevenue: 0,
+    });
+
+    const cards = [
+        { title: "Total Orders", value: stats.totalOrders, desc: "All-time orders", color: "#facc15" },
+        { title: "Pending Orders", value: stats.pendingOrders, desc: "Awaiting approval", color: "#60a5fa" },
+        { title: "Total Products", value: stats.totalProducts, desc: "Active store items", color: "#34d399" },
+        { title: "Total Users", value: stats.totalUsers, desc: "Registered users", color: "#f87171" },
+        { title: "Total Revenue", value: `৳${stats.totalRevenue.toLocaleString()}`, desc: "Overall earnings", color: "#a78bfa" },
+        { title: "Last Month Revenue", value: `৳${stats.lastMonthRevenue.toLocaleString()}`, desc: "Earnings in previous month", color: "#fb923c" },
+    ];
+
+
+
+
+    useEffect(() => {
+        const fetchData = async () => {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/analytics/overview`);
+            const json = await res.json();
+            setStats(json);
+        };
+        fetchData();
+    }, [refreshKey]);
+
+
     useEffect(() => {
         async function fetchData() {
             try {
@@ -334,25 +366,33 @@ export default function AdminDashboard() {
 
             {/* Overview Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {[
-                    { title: "Total Orders", value: "120", desc: "Orders this month" },
-                    { title: "Pending Orders", value: "35", desc: "Awaiting approval" },
-                    { title: "Total Products", value: "45", desc: "Active store items" },
-                    { title: "Total Users", value: "250", desc: "Registered users" },
-                ].map((item, idx) => (
-                    <Card key={idx} className="bg-white border border-cyan-200">
-                        <CardHeader>
-                            <CardTitle>{item.title}</CardTitle>
-                            <CardDescription>{item.desc}</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-3xl font-bold">{item.value}</p>
-                        </CardContent>
-                    </Card>
+                {cards.map((item, idx) => (
+                    <div
+                        key={idx}
+                        className="relative transition-transform hover:-translate-y-1"
+                    >
+                        <Card
+                            className="p-4 cursor-pointer border-4 border-black rounded-xl shadow-[6px_6px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_rgba(0,0,0,1)] bg-white"
+                            style={{ backgroundColor: item.color + "20" }}
+                        >
+                            <CardHeader className="p-0 mb-2">
+                                <CardTitle className="text-lg font-extrabold text-gray-800">
+                                    {item.title}
+                                </CardTitle>
+                                <CardDescription className="text-sm text-gray-700">
+                                    {item.desc}
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-0">
+                                <p className="text-3xl font-black text-gray-900">{item.value}</p>
+                            </CardContent>
+                        </Card>
+
+                    </div>
                 ))}
             </div>
 
-            <Button onClick={handleDataChange}><RefreshCcw/> Refresh Data</Button>
+            <Button onClick={handleDataChange}><RefreshCcw /> Refresh Data</Button>
             {/* Analytics Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Monthly Sales Analytics */}
