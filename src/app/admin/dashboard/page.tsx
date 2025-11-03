@@ -19,7 +19,7 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@
 
 // Recharts
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
-import { CrossIcon, Edit, Plus, Save, SaveIcon, Trash, View, X } from "lucide-react";
+import { CrossIcon, Edit, Plus, RefreshCcw, Save, SaveIcon, Trash, View, X } from "lucide-react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -69,9 +69,13 @@ interface Order {
         phone?: string;
         address?: string;
     };
-    status: "pending" | "paid" | "approved" | "shipped" | "cancelled";
+    status: "pending" | "paid" | "approved" | "shipped" | "cancelled" | "delivered";
     createdAt: string;
 }
+
+interface SalesData { month: string; sales: number; }
+interface CategoryData { category: string; stock: number; }
+
 
 
 
@@ -82,6 +86,15 @@ export default function AdminDashboard() {
     const [orderFilter, setOrderFilter] = useState("1month");
     const router = useRouter();
     const [openAddModal, setOpenAddModal] = useState(false);
+
+
+    // Analytics Data States
+    const [refreshKey, setRefreshKey] = useState(0);
+    const [salesData, setSalesData] = useState<SalesData[]>([]);
+    const [categoryData, setCategoryData] = useState<CategoryData[]>([]);
+
+
+    //-- Products State ---
     const [newProduct, setNewProduct] = useState({
         title: "",
         description: "",
@@ -91,8 +104,6 @@ export default function AdminDashboard() {
         stock: "",
         featured: false,
     });
-
-    //-- Products State ---
     const [products, setProducts] = useState<ProductState[]>([]);
     const [selectedProduct, setSelectedProduct] = useState<ProductState | null>(null);
     const [openEditModal, setOpenEditModal] = useState(false);
@@ -105,6 +116,28 @@ export default function AdminDashboard() {
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [openOrderModal, setOpenOrderModal] = useState(false);
 
+    useEffect(() => {
+        async function fetchData() {
+            try {
+                const [salesRes, catRes] = await Promise.all([
+                    fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/orders/sales`),
+                    fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/products/category-stock`),
+                ]);
+
+                const [sales, categories] = await Promise.all([
+                    salesRes.json(),
+                    catRes.json(),
+                ]);
+
+                setSalesData(sales);
+                setCategoryData(categories);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        fetchData();
+    }, [refreshKey]);
 
     useEffect(() => {
         const fetchOrders = async () => {
@@ -189,27 +222,11 @@ export default function AdminDashboard() {
         fetchProducts();
     }, []);
 
-
-
     if (!isAdmin) return null;
     if (loading) return <Loader />;
 
-    // --- Dummy Analytics Data ---
-    const salesData = [
-        { month: "Jan", sales: 2400 },
-        { month: "Feb", sales: 3200 },
-        { month: "Mar", sales: 1800 },
-        { month: "Apr", sales: 4000 },
-        { month: "May", sales: 3000 },
-        { month: "Jun", sales: 3700 },
-    ];
-
-    const productData = [
-        { name: "Electronics", count: 45 },
-        { name: "Fashion", count: 30 },
-        { name: "Home", count: 22 },
-        { name: "Books", count: 15 },
-    ];
+    // --- Refresh Data Handler ---
+    const handleDataChange = () => setRefreshKey((prev) => prev + 1);
 
     // --- Add Product Handler ---
     const handleAddProduct = async () => {
@@ -219,7 +236,7 @@ export default function AdminDashboard() {
         }
 
         try {
-            const res = await fetch("/api/products/add", {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/products/add`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ ...newProduct }),
@@ -295,7 +312,7 @@ export default function AdminDashboard() {
     // --- Order Status Change Handler ---
     const handleStatusChange = async (orderId: string, newStatus: Order["status"]) => {
         try {
-            const res = await fetch("/api/orders", {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/orders`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ orderId, status: newStatus }),
@@ -335,8 +352,10 @@ export default function AdminDashboard() {
                 ))}
             </div>
 
+            <Button onClick={handleDataChange}><RefreshCcw/> Refresh Data</Button>
             {/* Analytics Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Monthly Sales Analytics */}
                 <Card className="border border-cyan-200">
                     <CardHeader>
                         <CardTitle>Monthly Sales Analytics</CardTitle>
@@ -349,12 +368,18 @@ export default function AdminDashboard() {
                                 <XAxis dataKey="month" />
                                 <YAxis />
                                 <Tooltip />
-                                <Line type="monotone" dataKey="sales" stroke="#06b6d4" strokeWidth={3} />
+                                <Line
+                                    type="monotone"
+                                    dataKey="sales"
+                                    stroke="#06b6d4"
+                                    strokeWidth={3}
+                                />
                             </LineChart>
                         </ResponsiveContainer>
                     </CardContent>
                 </Card>
 
+                {/* Products by Category */}
                 <Card className="border border-cyan-200">
                     <CardHeader>
                         <CardTitle>Products by Category</CardTitle>
@@ -362,12 +387,16 @@ export default function AdminDashboard() {
                     </CardHeader>
                     <CardContent>
                         <ResponsiveContainer width="100%" height={250}>
-                            <BarChart data={productData}>
+                            <BarChart data={categoryData}>
                                 <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="name" />
+                                <XAxis dataKey="category" />
                                 <YAxis />
                                 <Tooltip />
-                                <Bar dataKey="count" fill="#0891b2" radius={[5, 5, 0, 0]} />
+                                <Bar
+                                    dataKey="stock"
+                                    fill="#0891b2"
+                                    radius={[5, 5, 0, 0]}
+                                />
                             </BarChart>
                         </ResponsiveContainer>
                     </CardContent>
@@ -496,6 +525,7 @@ export default function AdminDashboard() {
                                                             "approved",
                                                             "shipped",
                                                             "cancelled",
+                                                            "delivered",
                                                         ].map((s) => (
                                                             <SelectItem key={s} value={s}>
                                                                 {s[0].toUpperCase() + s.slice(1)}
