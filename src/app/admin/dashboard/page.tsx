@@ -83,7 +83,7 @@ export default function AdminDashboard() {
     const [loading, setLoading] = useState(true);
     const { user } = useAppSelector((s) => s.auth);
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
-    const [orderFilter, setOrderFilter] = useState("1month");
+    const [orderFilter, setOrderFilter] = useState("all");
     const router = useRouter();
     const [openAddModal, setOpenAddModal] = useState(false);
 
@@ -135,9 +135,7 @@ export default function AdminDashboard() {
         { title: "Last Month Revenue", value: `৳${stats.lastMonthRevenue.toLocaleString()}`, desc: "Earnings in previous month", color: "#fb923c" },
     ];
 
-
-
-
+    // Data Fetching Effects
     useEffect(() => {
         const fetchData = async () => {
             const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/analytics/overview`);
@@ -146,7 +144,6 @@ export default function AdminDashboard() {
         };
         fetchData();
     }, [refreshKey]);
-
 
     useEffect(() => {
         async function fetchData() {
@@ -356,6 +353,26 @@ export default function AdminDashboard() {
         }
     };
 
+    // --- Filtered Orders ---
+    const filteredOrders = orders.filter((order) => {
+        const now = new Date();
+        const orderDate = new Date(order.createdAt);
+
+        switch (orderFilter) {
+            case "7days":
+                return orderDate >= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); // last 7 days
+            case "1month":
+                return orderDate >= new Date(now.setMonth(now.getMonth() - 1)); // last 1 month
+            case "6months":
+                return orderDate >= new Date(now.setMonth(now.getMonth() - 5)); // last 6 months
+            case "1year":
+                return orderDate >= new Date(now.setFullYear(now.getFullYear() - 1)); // last 1 year
+            case "all":
+            default:
+                return true; // show all orders
+        }
+    });
+
     return (
         <div className="mt-20 p-6 max-w-7xl mx-auto space-y-8">
             {/* Header */}
@@ -460,633 +477,194 @@ export default function AdminDashboard() {
                                 <SelectValue placeholder="Filter by time" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="1month">Last 1 Month</SelectItem>
-                                <SelectItem value="3months">Last 3 Months</SelectItem>
-                                <SelectItem value="6months">Last 6 Months</SelectItem>
+                                <SelectItem className="cursor-pointer" value="all">Show All</SelectItem>
+                                <SelectItem className="cursor-pointer" value="7days">Last 7 Days</SelectItem>
+                                <SelectItem className="cursor-pointer" value="1month">Last 1 Month</SelectItem>
+                                <SelectItem className="cursor-pointer" value="6months">Last 6 Months</SelectItem>
+                                <SelectItem className="cursor-pointer" value="1year">Last 1 Year</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
 
-                    {/* Order Details Modal */}
-                    <Dialog open={openOrderModal} onOpenChange={setOpenOrderModal}>
-                        <DialogContent className="max-w-md rounded-2xl border border-cyan-200 shadow-lg">
-                            <DialogHeader>
-                                <DialogTitle className="text-xl font-semibold text-cyan-700">
-                                    Order Details: {selectedOrder?.orderID}
-                                </DialogTitle>
-                            </DialogHeader>
-
-                            <div className="space-y-4 mt-4">
-                                {/* Customer Info */}
-                                <div>
-                                    <p>
-                                        <strong>Name:</strong> {selectedOrder?.customer.name} <br />
-                                        {selectedOrder?.customer.email && (
-                                            <>
-                                                <strong>Email:</strong> {selectedOrder.customer.email} <br />
-                                            </>
-                                        )}
-                                        {selectedOrder?.customer.phone && (
-                                            <>
-                                                <strong>Phone:</strong> {selectedOrder.customer.phone} <br />
-                                            </>
-                                        )}
-                                        {selectedOrder?.customer.address && (
-                                            <>
-                                                <strong>Address:</strong> {selectedOrder.customer.address}
-                                            </>
-                                        )}
-                                    </p>
-                                </div>
-
-                                {/* Items */}
-                                <div>
-                                    <h4 className="font-semibold mb-2">Items:</h4>
-                                    <ul className="space-y-1">
-                                        {selectedOrder?.items.map((item) => (
-                                            <li key={item._id}>
-                                                {item.title} - {item.quantity} x &#x09F3;{item.price} = &#x09F3;{item.quantity * item.price}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-
-                                {/* Total */}
-                                <p className="mt-4 font-semibold">Total: &#x09F3;{selectedOrder?.total}</p>
-                            </div>
-
-                            <DialogFooter className="mt-6">
-                                <Button onClick={() => setOpenOrderModal(false)} variant="neutral" >
-                                    <X />Close
-                                </Button>
-                            </DialogFooter>
-                        </DialogContent>
-                    </Dialog>
-
-                    <ScrollArea className="h-[400px] w-full">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Order ID</TableHead>
-                                    <TableHead>Customer</TableHead>
-                                    <TableHead>Total</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Date</TableHead>
-                                    <TableHead>Details</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {orders.length === 0 ? (
+                    <div className="h-[400px] w-full overflow-auto border border-gray-200 rounded-md">
+                        <div className="min-w-max">
+                            <Table>
+                                <TableHeader>
                                     <TableRow>
-                                        <TableCell colSpan={6} className="text-center py-4">
-                                            No orders found
-                                        </TableCell>
+                                        <TableHead>Order ID</TableHead>
+                                        <TableHead>Customer</TableHead>
+                                        <TableHead>Total</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead>Date</TableHead>
+                                        <TableHead>Details</TableHead>
                                     </TableRow>
-                                ) : (
-                                    orders.map((order) => (
-                                        <TableRow key={order.orderID + order._id}>
-                                            <TableCell>{order.orderID}</TableCell>
-                                            <TableCell>{order.customer.name}</TableCell>
-                                            <TableCell>৳{order.total}</TableCell>
-                                            <TableCell>
-                                                <Select
-                                                    value={order.status}
-                                                    onValueChange={(v) =>
-                                                        handleStatusChange(order.orderID, v as Order["status"])
-                                                    }
-                                                >
-                                                    <SelectTrigger className="w-[120px]">
-                                                        <SelectValue />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {[
-                                                            "pending",
-                                                            "paid",
-                                                            "approved",
-                                                            "shipped",
-                                                            "cancelled",
-                                                            "delivered",
-                                                        ].map((s) => (
-                                                            <SelectItem key={s} value={s}>
-                                                                {s[0].toUpperCase() + s.slice(1)}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </TableCell>
-                                            <TableCell>
-                                                {new Date(order.createdAt).toLocaleDateString()}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Button
-                                                    size="sm"
-                                                    onClick={() => {
-                                                        setSelectedOrder(order);
-                                                        setOpenOrderModal(true);
-                                                    }}
-                                                >
-                                                    <View /> View
-                                                </Button>
+                                </TableHeader>
+                                <TableBody>
+                                    {filteredOrders.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={6} className="text-center py-4">
+                                                No orders found
                                             </TableCell>
                                         </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
-                    </ScrollArea>
+                                    ) : (
+                                        filteredOrders.map((order) => (
+                                            <TableRow key={order.orderID + order._id}>
+                                                <TableCell>{order.orderID}</TableCell>
+                                                <TableCell>{order.customer.name}</TableCell>
+                                                <TableCell>৳{order.total}</TableCell>
+                                                <TableCell>
+                                                    <Select
+                                                        value={order.status}
+                                                        onValueChange={(v) => handleStatusChange(order.orderID, v as Order["status"])}
+                                                    >
+                                                        <SelectTrigger className="w-[120px]">
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {["pending", "paid", "approved", "shipped", "cancelled", "delivered"].map((s) => (
+                                                                <SelectItem key={s} value={s}>
+                                                                    {s[0].toUpperCase() + s.slice(1)}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </TableCell>
+                                                <TableCell>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
+                                                <TableCell>
+                                                    <Button size="sm" onClick={() => { setSelectedOrder(order); setOpenOrderModal(true); }}>
+                                                        <View /> View
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </div>
                 </TabsContent>
 
                 {/* Products Table */}
                 <TabsContent value="products" className="pt-4 space-y-4">
                     <div className="flex justify-between items-center">
                         <h2 className="text-lg font-semibold">Manage Products</h2>
-                        <div className="flex gap-2">
-                            <Button onClick={() => setOpenAddModal(true)}>
-                                <Plus /> Add Product
-                            </Button>
-
-                        </div>
+                        <Button onClick={() => setOpenAddModal(true)}>
+                            <Plus /> Add Product
+                        </Button>
                     </div>
 
-                    {/* Add Product Modal */}
-                    <Dialog open={openAddModal} onOpenChange={setOpenAddModal}>
-                        <DialogContent className="max-w-md rounded-2xl border border-cyan-200 shadow-lg">
-                            <DialogHeader>
-                                <DialogTitle className="text-xl font-semibold text-cyan-700">
-                                    Add New Product
-                                </DialogTitle>
-                            </DialogHeader>
-
-                            <div className="space-y-4 mt-4">
-                                {/* Title */}
-                                <div>
-                                    <Label className="text-sm text-gray-700">Title</Label>
-                                    <Input
-                                        className="border-cyan-500 focus:border-0"
-                                        placeholder="Enter product title"
-                                        value={newProduct.title}
-                                        onChange={(e) =>
-                                            setNewProduct({ ...newProduct, title: e.target.value })
-                                        }
-                                    />
-                                </div>
-
-                                {/* Description */}
-                                <div>
-                                    <Label className="text-sm text-gray-700">Description</Label>
-                                    <Textarea
-                                        className="border-cyan-500 focus:border-0"
-                                        rows={3}
-                                        placeholder="Enter a short description"
-                                        value={newProduct.description || ""}
-                                        onChange={(e) =>
-                                            setNewProduct({ ...newProduct, description: e.target.value })
-                                        }
-                                    />
-                                </div>
-
-                                {/* Price */}
-                                <div>
-                                    <Label className="text-sm text-gray-700">Price</Label>
-                                    <Input
-                                        className="border-cyan-500 focus:border-0"
-                                        type="number"
-                                        placeholder="Enter price"
-                                        value={newProduct.price}
-                                        onChange={(e) =>
-                                            setNewProduct({ ...newProduct, price: e.target.value })
-                                        }
-                                    />
-                                </div>
-
-                                {/* Category */}
-                                <div>
-                                    <Label className="text-sm text-gray-700">Category</Label>
-                                    <Select
-                                        value={newProduct.category}
-                                        onValueChange={(v) =>
-                                            setNewProduct({ ...newProduct, category: v })
-                                        }
-                                    >
-                                        <SelectTrigger className="border-cyan-500 focus:border-0">
-                                            <SelectValue placeholder="Select a category" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="Microcontroller">Microcontroller</SelectItem>
-                                            <SelectItem value="Sensor">Sensor</SelectItem>
-                                            <SelectItem value="Actuator">Actuator</SelectItem>
-                                            <SelectItem value="Misc">Misc</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                                {/* Stock */}
-                                <div>
-                                    <Label className="text-sm text-gray-700">Stock</Label>
-                                    <Input
-                                        className="border-cyan-500 focus:border-0"
-                                        type="number"
-                                        placeholder="Available quantity"
-                                        value={newProduct.stock}
-                                        onChange={(e) =>
-                                            setNewProduct({ ...newProduct, stock: e.target.value })
-                                        }
-                                    />
-                                </div>
-
-                                {/* Image Upload (Cloudinary Unsigned) */}
-                                <div>
-                                    <Label className="text-sm text-gray-700">Product Image</Label>
-                                    <Input
-                                        className="border-cyan-500 focus:border-0"
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={async (e: React.ChangeEvent<HTMLInputElement>) => {
-                                            const file = e.target.files?.[0];
-                                            if (!file) return;
-
-                                            const formData = new FormData();
-                                            formData.append("file", file);
-                                            formData.append(
-                                                "upload_preset",
-                                                process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET as string
-                                            );
-                                            formData.append("folder", "products");
-
-                                            try {
-                                                toast.loading("Uploading image...");
-                                                const res = await fetch(
-                                                    `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-                                                    {
-                                                        method: "POST",
-                                                        body: formData,
-                                                    }
-                                                );
-
-                                                const data = await res.json();
-                                                toast.dismiss();
-                                                if (data.secure_url) {
-                                                    setNewProduct((prev) => ({ ...prev, image: data.secure_url }));
-                                                    toast.success("Image uploaded successfully!");
-                                                } else {
-                                                    toast.error("Upload failed!");
-                                                }
-                                            } catch (err) {
-                                                toast.dismiss();
-                                                toast.error("Image upload failed!");
-                                                console.error(err);
-                                            }
-                                        }}
-                                    />
-
-                                    {/* Preview */}
-                                    {newProduct.image && (
-                                        <div className="mt-3 flex items-center gap-3">
-                                            <Image
-                                                width={96}
-                                                height={96}
-                                                src={newProduct?.image}
-                                                alt="Preview"
-                                                className="w-24 h-24 object-cover rounded-md border border-cyan-200 shadow-sm"
-                                            />
-                                            <Button
-                                                size="sm"
-                                                onClick={() =>
-                                                    setNewProduct((prev) => ({ ...prev, image: "" }))
-                                                }
-                                            >
-                                                <Trash /> Remove
-                                            </Button>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Featured */}
-                                <div className="flex items-center gap-2">
-                                    <Checkbox
-                                        checked={newProduct.featured}
-                                        onCheckedChange={(v) =>
-                                            setNewProduct({ ...newProduct, featured: Boolean(v) })
-                                        }
-                                    />
-                                    <Label className="text-sm text-gray-700">
-                                        Mark as Featured Product
-                                    </Label>
-                                </div>
-                            </div>
-
-                            <DialogFooter className="mt-6">
-                                <Button onClick={handleAddProduct} className="w-full">
-                                    <SaveIcon /> Add Product
-                                </Button>
-                            </DialogFooter>
-                        </DialogContent>
-                    </Dialog>
-
-                    {/* Edit Product Modal */}
-                    <Dialog open={openEditModal} onOpenChange={setOpenEditModal}>
-                        <DialogContent className="max-w-md rounded-2xl border border-cyan-200 shadow-lg">
-                            <DialogHeader>
-                                <DialogTitle className="text-xl font-semibold text-cyan-700">
-                                    Edit Product
-                                </DialogTitle>
-                            </DialogHeader>
-                            <Dialog open={openEditModal} onOpenChange={setOpenEditModal}>
-                                <DialogContent className="max-w-md rounded-2xl border border-cyan-200 shadow-lg">
-                                    <DialogHeader>
-                                        <DialogTitle className="text-xl font-semibold text-cyan-700">
-                                            Edit Product
-                                        </DialogTitle>
-                                    </DialogHeader>
-
-                                    {selectedProduct && (
-                                        <div className="space-y-4 mt-4">
-                                            <div>
-                                                <Label>Title</Label>
-                                                <Input
-                                                    className="border-cyan-500 focus:border-0"
-                                                    value={selectedProduct.title}
-                                                    onChange={(e) =>
-                                                        setSelectedProduct({ ...selectedProduct, title: e.target.value })
-                                                    }
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <Label>Description</Label>
-                                                <Textarea
-                                                    className="border-cyan-500 focus:border-0"
-                                                    value={selectedProduct.description || ""}
-                                                    onChange={(e) =>
-                                                        setSelectedProduct({ ...selectedProduct, description: e.target.value })
-                                                    }
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <Label>Price</Label>
-                                                <Input
-                                                    type="number"
-                                                    value={selectedProduct.price}
-                                                    onChange={(e) =>
-                                                        setSelectedProduct({ ...selectedProduct, price: Number(e.target.value) })
-                                                    }
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <Label>Category</Label>
-                                                <Select
-                                                    value={selectedProduct.category}
-                                                    onValueChange={(v) =>
-                                                        setSelectedProduct({ ...selectedProduct, category: v as ProductState["category"] })
-                                                    }
-                                                >
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select a category" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="Microcontroller">Microcontroller</SelectItem>
-                                                        <SelectItem value="Sensor">Sensor</SelectItem>
-                                                        <SelectItem value="Actuator">Actuator</SelectItem>
-                                                        <SelectItem value="Misc">Misc</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-
-                                            <div>
-                                                <Label>Stock</Label>
-                                                <Input
-                                                    type="number"
-                                                    value={selectedProduct.stock}
-                                                    onChange={(e) =>
-                                                        setSelectedProduct({ ...selectedProduct, stock: Number(e.target.value) })
-                                                    }
-                                                />
-                                            </div>
-
-                                            {/* Image Upload */}
-                                            <div>
-                                                <Label>Product Image</Label>
-                                                <Input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    onChange={async (e: React.ChangeEvent<HTMLInputElement>) => {
-                                                        const file = e.target.files?.[0];
-                                                        if (!file) return;
-
-                                                        const formData = new FormData();
-                                                        formData.append("file", file);
-                                                        formData.append(
-                                                            "upload_preset",
-                                                            process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET as string
-                                                        );
-                                                        formData.append("folder", "products");
-
-                                                        try {
-                                                            toast.loading("Uploading image...");
-                                                            const res = await fetch(
-                                                                `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-                                                                { method: "POST", body: formData }
-                                                            );
-                                                            const data = await res.json();
-                                                            toast.dismiss();
-                                                            if (data.secure_url) {
-                                                                setSelectedProduct((prev) =>
-                                                                    prev ? { ...prev, image: data.secure_url } : null
-                                                                );
-                                                                toast.success("Image updated successfully!");
-                                                            } else toast.error("Upload failed!");
-                                                        } catch (err) {
-                                                            toast.dismiss();
-                                                            toast.error("Image upload failed!");
-                                                            console.error(err);
-                                                        }
-                                                    }}
-                                                />
-
-                                                {selectedProduct.image && (
-                                                    <div className="mt-3 flex items-center gap-3">
-                                                        <Image
-                                                            width={96}
-                                                            height={96}
-                                                            src={selectedProduct.image}
-                                                            alt="Preview"
-                                                            className="w-24 h-24 object-cover rounded-md border border-cyan-200 shadow-sm"
-                                                        />
-                                                        <Button
-                                                            size="sm"
-                                                            onClick={() =>
-                                                                setSelectedProduct((prev) => (prev ? { ...prev, image: "" } : null))
-                                                            }
-                                                        >
-                                                            Remove
-                                                        </Button>
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            {/* Featured */}
-                                            <div className="flex items-center gap-2">
-                                                <Checkbox
-                                                    checked={selectedProduct.featured}
-                                                    onCheckedChange={(v) =>
-                                                        setSelectedProduct((prev) => (prev ? { ...prev, featured: Boolean(v) } : null))
-                                                    }
-                                                />
-                                                <Label>Mark as Featured Product</Label>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    <DialogFooter>
-                                        <Button onClick={handleEditProduct} className="w-full">
-                                            <Save />  Save Changes
-                                        </Button>
-                                    </DialogFooter>
-                                </DialogContent>
-                            </Dialog>
-
-                            <DialogFooter className="mt-6">
-                                <Button
-                                    onClick={async () => {
-                                        if (!selectedProduct) return;
-                                        try {
-                                            const res = await fetch("/api/products/edit", {
-                                                method: "PUT",
-                                                headers: { "Content-Type": "application/json" },
-                                                body: JSON.stringify(selectedProduct),
-                                            });
-                                            const data = await res.json();
-                                            if (res.ok) {
-                                                toast.success(data.message);
-                                                setOpenEditModal(false);
-                                                setProducts((prev) =>
-                                                    prev.map((p) =>
-                                                        p._id === selectedProduct._id ? data.product : p
-                                                    )
-                                                );
-                                            } else toast.error(data.message);
-                                        } catch (err) {
-                                            toast.error("Update failed!");
-                                            console.error(err);
-                                        }
-                                    }}
-                                    className="w-full"
-                                >
-                                    Save Changes
-                                </Button>
-                            </DialogFooter>
-                        </DialogContent>
-                    </Dialog>
-
-                    {/* Product Table */}
-                    <ScrollArea className="h-[400px] w-full">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Title</TableHead>
-                                    <TableHead>Price</TableHead>
-                                    <TableHead>Category</TableHead>
-                                    <TableHead>Stock</TableHead>
-                                    <TableHead>Action</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {products.length > 0 ? (
-                                    products.map((product) => (
-                                        <TableRow key={product._id}>
-                                            <TableCell>{product.title}</TableCell>
-                                            <TableCell>৳{product.price}</TableCell>
-                                            <TableCell>{product.category}</TableCell>
-                                            <TableCell>{product.stock}</TableCell>
-                                            <TableCell className="flex gap-2">
-                                                <Button
-                                                    size="sm"
-                                                    onClick={() => {
-                                                        setSelectedProduct(product);
-                                                        setOpenEditModal(true);
-                                                    }}
-                                                >
-                                                    <Edit />   Edit
-                                                </Button>
-                                                <AlertDialog>
-                                                    <AlertDialogTrigger asChild>
-                                                        <Button size="sm" variant="neutral">
-                                                            <Trash /> Delete
-                                                        </Button>
-                                                    </AlertDialogTrigger>
-                                                    <AlertDialogContent>
-                                                        <AlertDialogHeader>
-                                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                                            <AlertDialogDescription>
-                                                                This action cannot be undone. The product will be permanently deleted.
-                                                            </AlertDialogDescription>
-                                                        </AlertDialogHeader>
-                                                        <AlertDialogFooter>
-                                                            <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
-                                                            <AlertDialogAction
-                                                                onClick={async () => {
-                                                                    try {
-                                                                        const res = await fetch(`/api/products/delete?id=${product._id}`, {
-                                                                            method: "DELETE",
-                                                                        });
-                                                                        const data = await res.json();
-                                                                        if (res.ok) {
-                                                                            toast.success(data.message);
-                                                                            setProducts(products.filter((p) => p._id !== product._id));
-                                                                        } else toast.error(data.message);
-                                                                    } catch {
-                                                                        toast.error("Delete failed!");
-                                                                    }
-                                                                }}
-                                                            >
+                    <div className="h-[400px] w-full overflow-auto border border-gray-200 rounded-md">
+                        <div className="min-w-max">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Title</TableHead>
+                                        <TableHead>Price</TableHead>
+                                        <TableHead>Category</TableHead>
+                                        <TableHead>Stock</TableHead>
+                                        <TableHead>Action</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {products.length > 0 ? (
+                                        products.map((product) => (
+                                            <TableRow key={product._id}>
+                                                <TableCell>{product.title}</TableCell>
+                                                <TableCell>৳{product.price}</TableCell>
+                                                <TableCell>{product.category}</TableCell>
+                                                <TableCell>{product.stock}</TableCell>
+                                                <TableCell className="flex gap-2">
+                                                    <Button
+                                                        size="sm"
+                                                        onClick={() => {
+                                                            setSelectedProduct(product);
+                                                            setOpenEditModal(true);
+                                                        }}
+                                                    >
+                                                        <Edit /> Edit
+                                                    </Button>
+                                                    <AlertDialog>
+                                                        <AlertDialogTrigger asChild>
+                                                            <Button size="sm" variant="neutral">
                                                                 <Trash /> Delete
-                                                            </AlertDialogAction>
-                                                        </AlertDialogFooter>
-                                                    </AlertDialogContent>
-                                                </AlertDialog>
+                                                            </Button>
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent>
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                                <AlertDialogDescription>
+                                                                    This action cannot be undone. The product will be permanently deleted.
+                                                                </AlertDialogDescription>
+                                                            </AlertDialogHeader>
+                                                            <AlertDialogFooter>
+                                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                <AlertDialogAction
+                                                                    onClick={async () => {
+                                                                        try {
+                                                                            const res = await fetch(`/api/products/delete?id=${product._id}`, {
+                                                                                method: "DELETE",
+                                                                            });
+                                                                            const data = await res.json();
+                                                                            if (res.ok) {
+                                                                                toast.success(data.message);
+                                                                                setProducts(products.filter((p) => p._id !== product._id));
+                                                                            } else toast.error(data.message);
+                                                                        } catch {
+                                                                            toast.error("Delete failed!");
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    <Trash /> Delete
+                                                                </AlertDialogAction>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={5} className="text-center text-gray-500">
+                                                No products found
                                             </TableCell>
                                         </TableRow>
-                                    ))
-                                ) : (
-                                    <TableRow>
-                                        <TableCell colSpan={5} className="text-center text-gray-500">
-                                            No products found
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-
-                        </Table>
-                    </ScrollArea>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </div>
                 </TabsContent>
 
                 {/* Users Table */}
                 <TabsContent value="users" className="pt-4">
-                    <ScrollArea className="h-[400px] w-full">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Name</TableHead>
-                                    <TableHead>Email</TableHead>
-                                    <TableHead>Role</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {users.map((user) => (
-                                    <TableRow key={user._id}>
-                                        <TableCell>{user.displayName || "No Name"}</TableCell>
-                                        <TableCell>{user.email}</TableCell>
-                                        <TableCell>
-                                            <Badge variant="neutral"> {user.role[0].toUpperCase() + user.role.slice(1)}</Badge>
-                                        </TableCell>
+                    <div className="h-[400px] w-full overflow-auto border border-gray-200 rounded-md">
+                        <div className="min-w-max">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Name</TableHead>
+                                        <TableHead>Email</TableHead>
+                                        <TableHead>Role</TableHead>
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </ScrollArea>
+                                </TableHeader>
+                                <TableBody>
+                                    {users.map((user) => (
+                                        <TableRow key={user._id}>
+                                            <TableCell>{user.displayName || "No Name"}</TableCell>
+                                            <TableCell>{user.email}</TableCell>
+                                            <TableCell>
+                                                <Badge variant="neutral">
+                                                    {user.role[0].toUpperCase() + user.role.slice(1)}
+                                                </Badge>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </div>
                 </TabsContent>
+
             </Tabs>
         </div>
     );
