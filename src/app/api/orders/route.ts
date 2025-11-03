@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Order from "@/models/Order";
 
-
+// handle POST for creating a new order
 export const POST = async (req: NextRequest) => {
   try {
     await connectDB();
@@ -43,3 +43,26 @@ export const POST = async (req: NextRequest) => {
     );
   }
 };
+
+// handle GET for fetching orders
+export async function GET() {
+  await connectDB();
+  try {
+    const orders = await Order.find().sort({ createdAt: -1 });
+    return NextResponse.json(orders);
+  } catch (error) {
+    return NextResponse.json({ message: "Failed to fetch orders", error }, { status: 500 });
+  }
+}
+
+//handle PATCH for status update
+export async function PATCH(req: Request) {
+  await connectDB();
+  try {
+    const { orderId, status } = await req.json();
+    const updatedOrder = await Order.findOneAndUpdate({ orderID: orderId }, { status }, { new: true });
+    return NextResponse.json(updatedOrder);
+  } catch (error) {
+    return NextResponse.json({ message: "Failed to update order", error }, { status: 500 });
+  }
+}

@@ -19,7 +19,7 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@
 
 // Recharts
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
-import { Edit, Plus, Save, SaveIcon, Trash } from "lucide-react";
+import { CrossIcon, Edit, Plus, Save, SaveIcon, Trash, View, X } from "lucide-react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -50,6 +50,31 @@ interface User {
     role: "user" | "admin";
 }
 
+interface OrderItem {
+    _id: string;
+    title: string;
+    price: number;
+    quantity: number;
+    image?: string;
+}
+
+interface Order {
+    _id: string;
+    orderID: string;
+    items: OrderItem[];
+    total: number;
+    customer: {
+        name: string;
+        email?: string;
+        phone?: string;
+        address?: string;
+    };
+    status: "pending" | "paid" | "approved" | "shipped" | "cancelled";
+    createdAt: string;
+}
+
+
+
 export default function AdminDashboard() {
     const [loading, setLoading] = useState(true);
     const { user } = useAppSelector((s) => s.auth);
@@ -66,16 +91,40 @@ export default function AdminDashboard() {
         stock: "",
         featured: false,
     });
+
+    //-- Products State ---
     const [products, setProducts] = useState<ProductState[]>([]);
     const [selectedProduct, setSelectedProduct] = useState<ProductState | null>(null);
     const [openEditModal, setOpenEditModal] = useState(false);
 
+    //-- Users State ---
     const [users, setUsers] = useState<User[]>([]);
+
+    //-- Orders State ---
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+    const [openOrderModal, setOpenOrderModal] = useState(false);
+
+
+    useEffect(() => {
+        const fetchOrders = async () => {
+            try {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/orders`);
+                const data = await res.json();
+                setOrders(data);
+            } catch (error) {
+                console.error(error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchOrders();
+    }, []);
 
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const res = await fetch("/api/users");
+                const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/users`);
                 const data = await res.json();
                 setUsers(data);
             } catch (error) {
@@ -139,6 +188,7 @@ export default function AdminDashboard() {
         }
         fetchProducts();
     }, []);
+
 
 
     if (!isAdmin) return null;
@@ -242,6 +292,21 @@ export default function AdminDashboard() {
         }
     };
 
+    // --- Order Status Change Handler ---
+    const handleStatusChange = async (orderId: string, newStatus: Order["status"]) => {
+        try {
+            const res = await fetch("/api/orders", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ orderId, status: newStatus }),
+            });
+            const updatedOrder = await res.json();
+            setOrders((prev) => prev.map((o) => (o.orderID === orderId ? updatedOrder : o)));
+        } catch (error) {
+            console.error("Failed to update status:", error);
+        }
+    };
+
     return (
         <div className="mt-20 p-6 max-w-7xl mx-auto space-y-8">
             {/* Header */}
@@ -333,6 +398,62 @@ export default function AdminDashboard() {
                         </Select>
                     </div>
 
+                    {/* Order Details Modal */}
+                    <Dialog open={openOrderModal} onOpenChange={setOpenOrderModal}>
+                        <DialogContent className="max-w-md rounded-2xl border border-cyan-200 shadow-lg">
+                            <DialogHeader>
+                                <DialogTitle className="text-xl font-semibold text-cyan-700">
+                                    Order Details: {selectedOrder?.orderID}
+                                </DialogTitle>
+                            </DialogHeader>
+
+                            <div className="space-y-4 mt-4">
+                                {/* Customer Info */}
+                                <div>
+                                    <p>
+                                        <strong>Name:</strong> {selectedOrder?.customer.name} <br />
+                                        {selectedOrder?.customer.email && (
+                                            <>
+                                                <strong>Email:</strong> {selectedOrder.customer.email} <br />
+                                            </>
+                                        )}
+                                        {selectedOrder?.customer.phone && (
+                                            <>
+                                                <strong>Phone:</strong> {selectedOrder.customer.phone} <br />
+                                            </>
+                                        )}
+                                        {selectedOrder?.customer.address && (
+                                            <>
+                                                <strong>Address:</strong> {selectedOrder.customer.address}
+                                            </>
+                                        )}
+                                    </p>
+                                </div>
+
+                                {/* Items */}
+                                <div>
+                                    <h4 className="font-semibold mb-2">Items:</h4>
+                                    <ul className="space-y-1">
+                                        {selectedOrder?.items.map((item) => (
+                                            <li key={item._id}>
+                                                {item.title} - {item.quantity} x &#x09F3;{item.price} = &#x09F3;{item.quantity * item.price}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+
+                                {/* Total */}
+                                <p className="mt-4 font-semibold">Total: &#x09F3;{selectedOrder?.total}</p>
+                            </div>
+
+                            <DialogFooter className="mt-6">
+                                <Button onClick={() => setOpenOrderModal(false)} variant="neutral" >
+                                    <X />Close
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+
                     <ScrollArea className="h-[400px] w-full">
                         <Table>
                             <TableHeader>
@@ -346,22 +467,60 @@ export default function AdminDashboard() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {[...Array(10)].map((_, idx) => (
-                                    <TableRow key={idx}>
-                                        <TableCell>#ORD{1000 + idx}</TableCell>
-                                        <TableCell>John Doe</TableCell>
-                                        <TableCell>৳{(idx + 1) * 500}</TableCell>
-                                        <TableCell>
-                                            <Badge>
-                                                {idx % 2 === 0 ? "Pending" : "Approved"}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell>{new Date().toLocaleDateString()}</TableCell>
-                                        <TableCell>
-                                            <Button size="sm">View</Button>
+                                {orders.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={6} className="text-center py-4">
+                                            No orders found
                                         </TableCell>
                                     </TableRow>
-                                ))}
+                                ) : (
+                                    orders.map((order) => (
+                                        <TableRow key={order.orderID + order._id}>
+                                            <TableCell>{order.orderID}</TableCell>
+                                            <TableCell>{order.customer.name}</TableCell>
+                                            <TableCell>৳{order.total}</TableCell>
+                                            <TableCell>
+                                                <Select
+                                                    value={order.status}
+                                                    onValueChange={(v) =>
+                                                        handleStatusChange(order.orderID, v as Order["status"])
+                                                    }
+                                                >
+                                                    <SelectTrigger className="w-[120px]">
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {[
+                                                            "pending",
+                                                            "paid",
+                                                            "approved",
+                                                            "shipped",
+                                                            "cancelled",
+                                                        ].map((s) => (
+                                                            <SelectItem key={s} value={s}>
+                                                                {s[0].toUpperCase() + s.slice(1)}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </TableCell>
+                                            <TableCell>
+                                                {new Date(order.createdAt).toLocaleDateString()}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Button
+                                                    size="sm"
+                                                    onClick={() => {
+                                                        setSelectedOrder(order);
+                                                        setOpenOrderModal(true);
+                                                    }}
+                                                >
+                                                    <View /> View
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                )}
                             </TableBody>
                         </Table>
                     </ScrollArea>
@@ -850,7 +1009,7 @@ export default function AdminDashboard() {
                                         <TableCell>{user.displayName || "No Name"}</TableCell>
                                         <TableCell>{user.email}</TableCell>
                                         <TableCell>
-                                            <Badge variant="neutral"> {user.role[0].toUpperCase() +  user.role.slice(1)}</Badge>
+                                            <Badge variant="neutral"> {user.role[0].toUpperCase() + user.role.slice(1)}</Badge>
                                         </TableCell>
                                     </TableRow>
                                 ))}

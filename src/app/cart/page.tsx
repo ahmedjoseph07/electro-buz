@@ -112,8 +112,6 @@ export default function CartPage() {
                   <Trash />
                 </Button>
               </div>
-
-
             </div>
           </div>
         ))}

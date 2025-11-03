@@ -130,7 +130,7 @@ export default function Products() {
           {/* Price Filter Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger className="flex cursor-pointer items-center gap-2 border border-gray-300 rounded-lg px-4 py-2">
-              <span><DollarSign /></span>
+              <span>&#x09F3;</span>
               {priceFilter === "all" ? "Filter by Price" : priceFilter.charAt(0).toUpperCase() + priceFilter.slice(1)}
             </DropdownMenuTrigger>
             <DropdownMenuContent className="cursor-pointer">

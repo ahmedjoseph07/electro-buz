@@ -11,6 +11,7 @@ import Loader from "@/components/ui/loader";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ProductDetailsProps {
   product: {
@@ -100,7 +101,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 
 
   return (
-    <section className="py-10 bg-white mt-20 flex flex-col items-center px-20 space-y-10">
+    <section className="py-10 bg-white mt-20 flex flex-col items-center md:px-20 space-y-10">
       {/* Header */}
       <div className="text-center max-w-2xl mb-6">
         <h2 className="text-3xl font-bold">
@@ -158,21 +159,21 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
       ) : (
         <>
           {/* Main Product + Similar Products */}
-          <div className="flex md:flex-col flex-col-reverse lg:flex-row gap-10 max-w-6xl w-full">
+          <div className="flex flex-col-reverse lg:flex-row gap-10 max-w-6xl w-full">
             {/* Similar Products */}
             {similarProducts.length > 0 ? (
               <div className="lg:w-1/3">
                 <h3 className="text-xl font-semibold text-gray-800 mb-4">
                   Similar Products
                 </h3>
-
-                <div className="flex flex-col gap-4 max-h-[400px] overflow-y-auto">
-                  {similarProducts.map((p) => (
-                    <HoverCard key={p._id}>
-                      <HoverCardTrigger asChild>
+                <div className="flex flex-col gap-4 max-h-[400px] overflow-y-auto border border-cyan-500 rounded-2xl p-2">
+                  {similarProducts.length > 0 ? (
+                    <div className="flex flex-col gap-3">
+                      {similarProducts.map((p) => (
                         <Link
+                          key={p._id}
                           href={`/products/${p._id}`}
-                          className="flex items-center gap-3 p-3 border border-cyan-500 rounded-lg transition-all duration-300"
+                          className="flex items-center gap-3 p-3 border rounded-lg transition-all duration-300 hover:shadow-md"
                         >
                           <div className="overflow-hidden w-20 h-20 rounded-md bg-gray-100 flex-shrink-0 flex justify-center items-center">
                             <Image
@@ -190,15 +191,27 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                             <span className="text-cyan-600 text-xl font-bold line-clamp-1">
                               ৳{p.price}
                             </span>
+                            {p.description && (
+                              <span className="text-gray-600 text-sm line-clamp-2">
+                                {p.description}
+                              </span>
+                            )}
                           </div>
                         </Link>
-                      </HoverCardTrigger>
-                      <HoverCardContent className="w-60">
-                        <p className="text-gray-700 text-sm">{p.description}</p>
-                      </HoverCardContent>
-                    </HoverCard>
-                  ))}
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center min-h-[200px] p-6">
+                      <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                        Similar Products
+                      </h3>
+                      <p className="text-gray-500 italic text-center">
+                        No similar products found
+                      </p>
+                    </div>
+                  )}
                 </div>
+
               </div>
             ) : (
               <div className="lg:w-1/3 flex border rounded-2xl cursor-pointer border-cyan-500 flex-col items-center justify-center min-h-[200px]">
