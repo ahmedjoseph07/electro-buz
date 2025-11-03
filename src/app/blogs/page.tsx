@@ -59,7 +59,7 @@ const Blogs = () => {
   return (
     <section className="py-10 mt-20 bg-gray-50">
       <h2 className="text-3xl font-bold text-center mb-4">
-        Our <span className="text-cyan-500">Blogs 🧠</span>
+        Our <span className="text-cyan-500">Blogs </span>
       </h2>
       <p className="max-w-3xl text-center text-gray-500 mx-6 md:mx-auto mb-10">
         Dive into the world of robotics, IoT, and electronics. Learn, explore, and

@@ -118,7 +118,7 @@ const Featured = () => {
                                                 <Image
                                                     width={300}
                                                     height={300}
-                                                    src={"https://via.placeholder.com/300x300?text=No+Image"}
+                                                    src={item.image || "/placeholder.png"}
                                                     alt={item.title}
                                                     className="w-full h-48 object-cover rounded-md"
                                                 />

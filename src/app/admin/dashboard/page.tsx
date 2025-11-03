@@ -19,7 +19,7 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@
 
 // Recharts
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
-import { Cross, Edit, Plus, Save, SaveIcon, Trash } from "lucide-react";
+import { Edit, Plus, Save, SaveIcon, Trash } from "lucide-react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -43,6 +43,13 @@ type ProductState = {
     featured: boolean;
 };
 
+interface User {
+    _id: string;
+    displayName?: string;
+    email: string;
+    role: "user" | "admin";
+}
+
 export default function AdminDashboard() {
     const [loading, setLoading] = useState(true);
     const { user } = useAppSelector((s) => s.auth);
@@ -62,6 +69,23 @@ export default function AdminDashboard() {
     const [products, setProducts] = useState<ProductState[]>([]);
     const [selectedProduct, setSelectedProduct] = useState<ProductState | null>(null);
     const [openEditModal, setOpenEditModal] = useState(false);
+
+    const [users, setUsers] = useState<User[]>([]);
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                const res = await fetch("/api/users");
+                const data = await res.json();
+                setUsers(data);
+            } catch (error) {
+                console.error("Failed to fetch users:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchUsers();
+    }, []);
 
     useEffect(() => {
         const checkRole = async () => {
@@ -86,7 +110,6 @@ export default function AdminDashboard() {
 
         checkRole();
     }, [user, router]);
-
 
     useEffect(() => {
         async function fetchProducts() {
@@ -218,8 +241,6 @@ export default function AdminDashboard() {
             console.error(err);
         }
     };
-
-
 
     return (
         <div className="mt-20 p-6 max-w-7xl mx-auto space-y-8">
@@ -505,7 +526,7 @@ export default function AdminDashboard() {
                                                     setNewProduct((prev) => ({ ...prev, image: "" }))
                                                 }
                                             >
-                                               <Trash/> Remove
+                                                <Trash /> Remove
                                             </Button>
                                         </div>
                                     )}
@@ -527,7 +548,7 @@ export default function AdminDashboard() {
 
                             <DialogFooter className="mt-6">
                                 <Button onClick={handleAddProduct} className="w-full">
-                                   <SaveIcon/> Add Product
+                                    <SaveIcon /> Add Product
                                 </Button>
                             </DialogFooter>
                         </DialogContent>
@@ -691,7 +712,7 @@ export default function AdminDashboard() {
 
                                     <DialogFooter>
                                         <Button onClick={handleEditProduct} className="w-full">
-                                          <Save/>  Save Changes
+                                            <Save />  Save Changes
                                         </Button>
                                     </DialogFooter>
                                 </DialogContent>
@@ -791,7 +812,7 @@ export default function AdminDashboard() {
                                                                     }
                                                                 }}
                                                             >
-                                                               <Trash/> Delete
+                                                                <Trash /> Delete
                                                             </AlertDialogAction>
                                                         </AlertDialogFooter>
                                                     </AlertDialogContent>
@@ -824,14 +845,12 @@ export default function AdminDashboard() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {[...Array(10)].map((_, idx) => (
-                                    <TableRow key={idx}>
-                                        <TableCell>User {idx + 1}</TableCell>
-                                        <TableCell>user{idx}@example.com</TableCell>
+                                {users.map((user) => (
+                                    <TableRow key={user._id}>
+                                        <TableCell>{user.displayName || "No Name"}</TableCell>
+                                        <TableCell>{user.email}</TableCell>
                                         <TableCell>
-                                            <Badge>
-                                                {idx % 2 === 0 ? "user" : "admin"}
-                                            </Badge>
+                                            <Badge variant="neutral"> {user.role[0].toUpperCase() +  user.role.slice(1)}</Badge>
                                         </TableCell>
                                     </TableRow>
                                 ))}
