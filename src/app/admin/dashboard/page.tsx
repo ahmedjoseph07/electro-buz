@@ -19,15 +19,32 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@
 
 // Recharts
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
-import { Plus } from "lucide-react";
+import { Cross, Edit, Plus, Save, SaveIcon, Trash } from "lucide-react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import Image from "next/image";
+import { ProductDoc } from "@/models/Product";
+import Loader from "@/components/ui/loader";
+import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { AlertDialogCancel } from "@radix-ui/react-alert-dialog";
+
+type ProductState = {
+    _id: string;
+    title: string;
+    description?: string;
+    price: number;
+    image?: string;
+    category: "Microcontroller" | "Sensor" | "Actuator" | "Misc";
+    stock: number;
+    featured: boolean;
+};
 
 export default function AdminDashboard() {
+    const [loading, setLoading] = useState(true);
     const { user } = useAppSelector((s) => s.auth);
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
     const [orderFilter, setOrderFilter] = useState("1month");
@@ -37,14 +54,14 @@ export default function AdminDashboard() {
         title: "",
         description: "",
         price: "",
-        image:"",
+        image: "",
         category: "",
         stock: "",
         featured: false,
     });
-
-
-
+    const [products, setProducts] = useState<ProductState[]>([]);
+    const [selectedProduct, setSelectedProduct] = useState<ProductState | null>(null);
+    const [openEditModal, setOpenEditModal] = useState(false);
 
     useEffect(() => {
         const checkRole = async () => {
@@ -70,7 +87,39 @@ export default function AdminDashboard() {
         checkRole();
     }, [user, router]);
 
+
+    useEffect(() => {
+        async function fetchProducts() {
+            try {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/products`);
+                if (!res.ok) throw new Error("Failed to fetch products");
+                const data: ProductDoc[] = await res.json();
+
+                // Map to plain objects
+                const productsState: ProductState[] = data.map((p) => ({
+                    _id: p._id,
+                    title: p.title,
+                    description: p.description,
+                    price: p.price,
+                    image: p.image,
+                    category: p.category as ProductState["category"],
+                    stock: p.stock,
+                    featured: p.featured,
+                }));
+
+                setProducts(productsState);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchProducts();
+    }, []);
+
+
     if (!isAdmin) return null;
+    if (loading) return <Loader />;
 
     // --- Dummy Analytics Data ---
     const salesData = [
@@ -92,7 +141,7 @@ export default function AdminDashboard() {
     // --- Add Product Handler ---
     const handleAddProduct = async () => {
         if (!newProduct.title || !newProduct.price || !newProduct.category) {
-           toast.warning("Please fill all fields");
+            toast.warning("Please fill all fields");
             return;
         }
 
@@ -108,6 +157,22 @@ export default function AdminDashboard() {
             if (res.ok) {
                 toast.success("Product added successfully!");
                 setOpenAddModal(false);
+
+                // Add the new product to state
+                setProducts((prev) => [
+                    ...prev,
+                    {
+                        _id: data.product._id,
+                        title: data.product.title,
+                        description: data.product.description,
+                        price: data.product.price,
+                        image: data.product.image,
+                        category: data.product.category as ProductState["category"],
+                        stock: data.product.stock,
+                        featured: data.product.featured,
+                    }
+                ]);
+
                 setNewProduct({
                     title: "",
                     description: "",
@@ -124,6 +189,37 @@ export default function AdminDashboard() {
             toast.error("Server error while adding product");
         }
     };
+
+    // --- Edit Product Handler ---
+    const handleEditProduct = async () => {
+        if (!selectedProduct) return;
+
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/products/edit`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(selectedProduct),
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                toast.success(data.message);
+                setProducts((prev) =>
+                    prev.map((p) => (p._id === selectedProduct._id ? data.product : p))
+                );
+                setOpenEditModal(false);
+                setSelectedProduct(null);
+            } else {
+                toast.error(data.message);
+            }
+        } catch (err) {
+            toast.error("Update failed!");
+            console.error(err);
+        }
+    };
+
+
 
     return (
         <div className="mt-20 p-6 max-w-7xl mx-auto space-y-8">
@@ -258,7 +354,7 @@ export default function AdminDashboard() {
                             <Button onClick={() => setOpenAddModal(true)}>
                                 <Plus /> Add Product
                             </Button>
-                            <Button>Feature Product</Button>
+
                         </div>
                     </div>
 
@@ -396,7 +492,9 @@ export default function AdminDashboard() {
                                     {/* Preview */}
                                     {newProduct.image && (
                                         <div className="mt-3 flex items-center gap-3">
-                                            <img
+                                            <Image
+                                                width={96}
+                                                height={96}
                                                 src={newProduct?.image}
                                                 alt="Preview"
                                                 className="w-24 h-24 object-cover rounded-md border border-cyan-200 shadow-sm"
@@ -407,7 +505,7 @@ export default function AdminDashboard() {
                                                     setNewProduct((prev) => ({ ...prev, image: "" }))
                                                 }
                                             >
-                                                Remove
+                                               <Trash/> Remove
                                             </Button>
                                         </div>
                                     )}
@@ -429,7 +527,204 @@ export default function AdminDashboard() {
 
                             <DialogFooter className="mt-6">
                                 <Button onClick={handleAddProduct} className="w-full">
-                                    Save Product
+                                   <SaveIcon/> Add Product
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+
+                    {/* Edit Product Modal */}
+                    <Dialog open={openEditModal} onOpenChange={setOpenEditModal}>
+                        <DialogContent className="max-w-md rounded-2xl border border-cyan-200 shadow-lg">
+                            <DialogHeader>
+                                <DialogTitle className="text-xl font-semibold text-cyan-700">
+                                    Edit Product
+                                </DialogTitle>
+                            </DialogHeader>
+                            <Dialog open={openEditModal} onOpenChange={setOpenEditModal}>
+                                <DialogContent className="max-w-md rounded-2xl border border-cyan-200 shadow-lg">
+                                    <DialogHeader>
+                                        <DialogTitle className="text-xl font-semibold text-cyan-700">
+                                            Edit Product
+                                        </DialogTitle>
+                                    </DialogHeader>
+
+                                    {selectedProduct && (
+                                        <div className="space-y-4 mt-4">
+                                            <div>
+                                                <Label>Title</Label>
+                                                <Input
+                                                    className="border-cyan-500 focus:border-0"
+                                                    value={selectedProduct.title}
+                                                    onChange={(e) =>
+                                                        setSelectedProduct({ ...selectedProduct, title: e.target.value })
+                                                    }
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <Label>Description</Label>
+                                                <Textarea
+                                                    className="border-cyan-500 focus:border-0"
+                                                    value={selectedProduct.description || ""}
+                                                    onChange={(e) =>
+                                                        setSelectedProduct({ ...selectedProduct, description: e.target.value })
+                                                    }
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <Label>Price</Label>
+                                                <Input
+                                                    type="number"
+                                                    value={selectedProduct.price}
+                                                    onChange={(e) =>
+                                                        setSelectedProduct({ ...selectedProduct, price: Number(e.target.value) })
+                                                    }
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <Label>Category</Label>
+                                                <Select
+                                                    value={selectedProduct.category}
+                                                    onValueChange={(v) =>
+                                                        setSelectedProduct({ ...selectedProduct, category: v as ProductState["category"] })
+                                                    }
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select a category" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="Microcontroller">Microcontroller</SelectItem>
+                                                        <SelectItem value="Sensor">Sensor</SelectItem>
+                                                        <SelectItem value="Actuator">Actuator</SelectItem>
+                                                        <SelectItem value="Misc">Misc</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+
+                                            <div>
+                                                <Label>Stock</Label>
+                                                <Input
+                                                    type="number"
+                                                    value={selectedProduct.stock}
+                                                    onChange={(e) =>
+                                                        setSelectedProduct({ ...selectedProduct, stock: Number(e.target.value) })
+                                                    }
+                                                />
+                                            </div>
+
+                                            {/* Image Upload */}
+                                            <div>
+                                                <Label>Product Image</Label>
+                                                <Input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={async (e: React.ChangeEvent<HTMLInputElement>) => {
+                                                        const file = e.target.files?.[0];
+                                                        if (!file) return;
+
+                                                        const formData = new FormData();
+                                                        formData.append("file", file);
+                                                        formData.append(
+                                                            "upload_preset",
+                                                            process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET as string
+                                                        );
+                                                        formData.append("folder", "products");
+
+                                                        try {
+                                                            toast.loading("Uploading image...");
+                                                            const res = await fetch(
+                                                                `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+                                                                { method: "POST", body: formData }
+                                                            );
+                                                            const data = await res.json();
+                                                            toast.dismiss();
+                                                            if (data.secure_url) {
+                                                                setSelectedProduct((prev) =>
+                                                                    prev ? { ...prev, image: data.secure_url } : null
+                                                                );
+                                                                toast.success("Image updated successfully!");
+                                                            } else toast.error("Upload failed!");
+                                                        } catch (err) {
+                                                            toast.dismiss();
+                                                            toast.error("Image upload failed!");
+                                                            console.error(err);
+                                                        }
+                                                    }}
+                                                />
+
+                                                {selectedProduct.image && (
+                                                    <div className="mt-3 flex items-center gap-3">
+                                                        <Image
+                                                            width={96}
+                                                            height={96}
+                                                            src={selectedProduct.image}
+                                                            alt="Preview"
+                                                            className="w-24 h-24 object-cover rounded-md border border-cyan-200 shadow-sm"
+                                                        />
+                                                        <Button
+                                                            size="sm"
+                                                            onClick={() =>
+                                                                setSelectedProduct((prev) => (prev ? { ...prev, image: "" } : null))
+                                                            }
+                                                        >
+                                                            Remove
+                                                        </Button>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Featured */}
+                                            <div className="flex items-center gap-2">
+                                                <Checkbox
+                                                    checked={selectedProduct.featured}
+                                                    onCheckedChange={(v) =>
+                                                        setSelectedProduct((prev) => (prev ? { ...prev, featured: Boolean(v) } : null))
+                                                    }
+                                                />
+                                                <Label>Mark as Featured Product</Label>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <DialogFooter>
+                                        <Button onClick={handleEditProduct} className="w-full">
+                                          <Save/>  Save Changes
+                                        </Button>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
+
+                            <DialogFooter className="mt-6">
+                                <Button
+                                    onClick={async () => {
+                                        if (!selectedProduct) return;
+                                        try {
+                                            const res = await fetch("/api/products/edit", {
+                                                method: "PUT",
+                                                headers: { "Content-Type": "application/json" },
+                                                body: JSON.stringify(selectedProduct),
+                                            });
+                                            const data = await res.json();
+                                            if (res.ok) {
+                                                toast.success(data.message);
+                                                setOpenEditModal(false);
+                                                setProducts((prev) =>
+                                                    prev.map((p) =>
+                                                        p._id === selectedProduct._id ? data.product : p
+                                                    )
+                                                );
+                                            } else toast.error(data.message);
+                                        } catch (err) {
+                                            toast.error("Update failed!");
+                                            console.error(err);
+                                        }
+                                    }}
+                                    className="w-full"
+                                >
+                                    Save Changes
                                 </Button>
                             </DialogFooter>
                         </DialogContent>
@@ -448,18 +743,71 @@ export default function AdminDashboard() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {[...Array(10)].map((_, idx) => (
-                                    <TableRow key={idx}>
-                                        <TableCell>Product {idx + 1}</TableCell>
-                                        <TableCell>৳{(idx + 1) * 100}</TableCell>
-                                        <TableCell>Category {idx % 3}</TableCell>
-                                        <TableCell>{Math.floor(Math.random() * 50)}</TableCell>
-                                        <TableCell>
-                                            <Button size="sm">Edit</Button>
+                                {products.length > 0 ? (
+                                    products.map((product) => (
+                                        <TableRow key={product._id}>
+                                            <TableCell>{product.title}</TableCell>
+                                            <TableCell>৳{product.price}</TableCell>
+                                            <TableCell>{product.category}</TableCell>
+                                            <TableCell>{product.stock}</TableCell>
+                                            <TableCell className="flex gap-2">
+                                                <Button
+                                                    size="sm"
+                                                    onClick={() => {
+                                                        setSelectedProduct(product);
+                                                        setOpenEditModal(true);
+                                                    }}
+                                                >
+                                                    <Edit />   Edit
+                                                </Button>
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <Button size="sm" variant="neutral">
+                                                            <Trash /> Delete
+                                                        </Button>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                            <AlertDialogDescription>
+                                                                This action cannot be undone. The product will be permanently deleted.
+                                                            </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
+                                                            <AlertDialogAction
+                                                                onClick={async () => {
+                                                                    try {
+                                                                        const res = await fetch(`/api/products/delete?id=${product._id}`, {
+                                                                            method: "DELETE",
+                                                                        });
+                                                                        const data = await res.json();
+                                                                        if (res.ok) {
+                                                                            toast.success(data.message);
+                                                                            setProducts(products.filter((p) => p._id !== product._id));
+                                                                        } else toast.error(data.message);
+                                                                    } catch {
+                                                                        toast.error("Delete failed!");
+                                                                    }
+                                                                }}
+                                                            >
+                                                               <Trash/> Delete
+                                                            </AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                ) : (
+                                    <TableRow>
+                                        <TableCell colSpan={5} className="text-center text-gray-500">
+                                            No products found
                                         </TableCell>
                                     </TableRow>
-                                ))}
+                                )}
                             </TableBody>
+
                         </Table>
                     </ScrollArea>
                 </TabsContent>
