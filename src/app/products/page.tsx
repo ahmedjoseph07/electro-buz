@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { ProductDoc } from "@/models/Product";
 import { useEffect, useState } from "react";
-import { ShoppingCart, Plus, Minus, Trash2, DollarSign, Search, ListFilter, AlertTriangle } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2, Search, ListFilter, AlertTriangle } from "lucide-react";
 import Loader from "@/components/ui/loader";
 import { useAppDispatch, useAppSelector } from "../hooks/reduxHook";
 import { addToCart, removeFromCart, decrementQuantity } from "@/features/cart/cartSlice";

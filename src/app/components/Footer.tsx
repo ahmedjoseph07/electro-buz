@@ -1,5 +1,4 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import { Mail, MapPin, Phone, Facebook, Linkedin, Globe } from "lucide-react";
 
 const Footer = () => {
@@ -29,26 +28,10 @@ const Footer = () => {
                         </li>
                         <li>
                             <a
-                                href="/refund-policy"
-                                className="hover:text-cyan-600 transition-colors"
-                            >
-                                Refund Policy
-                            </a>
-                        </li>
-                        <li>
-                            <a
-                                href="/privacy-policy"
+                                href="/privacy"
                                 className="hover:text-cyan-600 transition-colors"
                             >
                                 Privacy Policy
-                            </a>
-                        </li>
-                        <li>
-                            <a
-                                href="/contact"
-                                className="hover:text-cyan-600 transition-colors"
-                            >
-                                Contact Support
                             </a>
                         </li>
                     </ul>
@@ -58,13 +41,13 @@ const Footer = () => {
                 <div className="space-y-4">
                     <h3 className="text-xl font-bold text-cyan-600">Contact Us</h3>
                     <p className="flex items-center gap-2 text-gray-600 text-sm">
-                        <MapPin className="w-5 h-5 text-cyan-600" /> CUET Campus, Chittagong, Bangladesh
+                        <MapPin className="w-5 h-5 text-cyan-600" />IT Business Incubator, CUET Campus, Chittagong, Bangladesh
                     </p>
                     <p className="flex items-center gap-2 text-gray-600 text-sm">
                         <Phone className="w-5 h-5 text-cyan-600" /> +880 1878 904575
                     </p>
                     <p className="flex items-center gap-2 text-gray-600 text-sm">
-                        <Mail className="w-5 h-5 text-cyan-600" /> cypherbangladesh@gmail.com
+                        <Mail className="w-5 h-5 text-cyan-600" /> support@electrobuz.com
                     </p>
 
                     <div className="flex gap-4 mt-4">

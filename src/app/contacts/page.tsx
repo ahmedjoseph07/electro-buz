@@ -28,9 +28,9 @@ export default function Contacts() {
     const contacts = [
         {
             title: "Email Us",
-            desc: "cypherbangladesh@gmail.com",
+            desc: "support@electrobuz.com",
             icon: <Mail className="w-10 h-10 text-cyan-600" />,
-            link: "mailto:cypherbangladesh@gmail.com",
+            link: "mailto:support@electrobuz.com",
             hoverText: "Send us an email directly!",
         },
         {

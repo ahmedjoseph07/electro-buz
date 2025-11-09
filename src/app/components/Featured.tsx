@@ -129,7 +129,7 @@ const Featured = () => {
                                                     {item.description}
                                                 </CardDescription>
                                                 <CardContent>
-                                                    <p className="font-medium text-gray-800 mt-2">${item.price}</p>
+                                                    <p className="font-medium text-gray-800 mt-2">&#2547;{item.price}</p>
                                                 </CardContent>
                                             </CardHeader>
                                         </Card>

@@ -11,7 +11,6 @@ import Loader from "@/components/ui/loader";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ProductDetailsProps {
   product: {
