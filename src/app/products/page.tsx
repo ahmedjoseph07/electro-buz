@@ -16,6 +16,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
+import axiosInstance from "@/lib/axiosInstance";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 export default function Products() {
   const [products, setProducts] = useState<ProductDoc[]>([]);
@@ -50,20 +52,26 @@ export default function Products() {
     setIsClient(true);
   }, []);
 
+  // Fetching all products
   useEffect(() => {
-    async function fetchProducts() {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/products`);
-        if (!res.ok) throw new Error("Failed to fetch products");
-        const data: ProductDoc[] = await res.json();
-        setProducts(data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setLoading(true);
+        try {
+          const res = await axiosInstance.get("/api/products");
+          setProducts(res.data.data);
+        } catch (err) {
+          console.error("Error fetching products:", err);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        console.warn("User not logged in — cannot fetch products");
       }
-    }
-    fetchProducts();
+    });
+
+    return () => unsubscribe();
   }, []);
 
   if (loading) return <Loader />;

@@ -28,6 +28,8 @@ import { ProductDoc } from "@/models/Product";
 import Loader from "@/components/ui/loader";
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { AlertDialogCancel } from "@radix-ui/react-alert-dialog";
+import { auth } from "@/lib/firebaseConfig";
+import axiosInstance from "@/lib/axiosInstance";
 
 type ProductState = {
     _id: string;
@@ -72,8 +74,6 @@ interface Order {
 
 interface SalesData { month: string; sales: number; }
 interface CategoryData { category: string; stock: number; }
-
-
 
 
 export default function AdminDashboard() {
@@ -132,7 +132,8 @@ export default function AdminDashboard() {
         { title: "Last Month Revenue", value: `৳${stats.lastMonthRevenue.toLocaleString()}`, desc: "Earnings in previous month", color: "#fb923c" },
     ];
 
-    // Data Fetching Effects
+    //! Data Fetching Effects
+    // Analytics Overview Data
     useEffect(() => {
         const fetchData = async () => {
             const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/analytics/overview`);
@@ -142,6 +143,7 @@ export default function AdminDashboard() {
         fetchData();
     }, [refreshKey]);
 
+    // Sales & Category Data
     useEffect(() => {
         async function fetchData() {
             try {
@@ -165,6 +167,7 @@ export default function AdminDashboard() {
         fetchData();
     }, [refreshKey]);
 
+    // Orders Data
     useEffect(() => {
         const fetchOrders = async () => {
             try {
@@ -180,21 +183,31 @@ export default function AdminDashboard() {
         fetchOrders();
     }, []);
 
+    // Users Data 
     useEffect(() => {
-        const fetchUsers = async () => {
+        const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
+            if (!currentUser) {
+                console.error("User not logged in");
+                setLoading(false);
+                return;
+            }
+
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/users`);
-                const data = await res.json();
-                setUsers(data);
+                const token = await currentUser.getIdToken();
+                const res = await axiosInstance(`/api/users`);
+                setUsers(res.data.data);
             } catch (error) {
                 console.error("Failed to fetch users:", error);
             } finally {
                 setLoading(false);
             }
-        };
-        fetchUsers();
+        });
+
+        // Cleanup listener on unmount
+        return () => unsubscribe();
     }, []);
 
+    // Role Check
     useEffect(() => {
         const checkRole = async () => {
             if (!user?.uid) {
@@ -219,12 +232,13 @@ export default function AdminDashboard() {
         checkRole();
     }, [user, router]);
 
+    // Products Data
     useEffect(() => {
         async function fetchProducts() {
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/products`);
-                if (!res.ok) throw new Error("Failed to fetch products");
-                const data: ProductDoc[] = await res.json();
+                const res = await axiosInstance(`/api/products`);
+
+                const data: ProductDoc[] = await res.data.data;
 
                 // Map to plain objects
                 const productsState: ProductState[] = data.map((p) => ({
@@ -824,7 +838,7 @@ export default function AdminDashboard() {
                                             <div>
                                                 <Label>Price</Label>
                                                 <Input
-                                                className="border-cyan-500 focus:border-0"
+                                                    className="border-cyan-500 focus:border-0"
                                                     type="number"
                                                     value={selectedProduct.price}
                                                     onChange={(e) =>
@@ -856,7 +870,7 @@ export default function AdminDashboard() {
                                             <div>
                                                 <Label>Stock</Label>
                                                 <Input
-                                                className="border-cyan-500 focus:border-0"
+                                                    className="border-cyan-500 focus:border-0"
                                                     type="number"
                                                     value={selectedProduct.stock}
                                                     onChange={(e) =>

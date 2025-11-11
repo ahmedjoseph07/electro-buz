@@ -17,6 +17,8 @@ import { Cpu, Cog, Zap, Loader2, MilestoneIcon } from "lucide-react";
 import Loader from "@/components/ui/loader";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import axiosInstance from "@/lib/axiosInstance";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 interface Product {
     _id: string;
@@ -31,7 +33,7 @@ const Featured = () => {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(false);
     const [activeCategory, setActiveCategory] = useState("Microcontroller");
-     const router = useRouter();
+    const router = useRouter();
 
     const categories = [
         { key: "Microcontroller", icon: <Cpu className="w-4 h-4" />, label: "Mircrontrollers" },
@@ -42,20 +44,24 @@ const Featured = () => {
 
     // Fetch all products once
     useEffect(() => {
-        const fetchProducts = async () => {
-            setLoading(true);
-            try {
-                const res = await fetch("/api/products");
-                const data = await res.json();
-                setProducts(data);
-            } catch (err) {
-                console.error("Error fetching products:", err);
-            } finally {
-                setLoading(false);
+        const auth = getAuth();
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                setLoading(true);
+                try {
+                    const res = await axiosInstance.get("/api/products");
+                    setProducts(res.data.data);
+                } catch (err) {
+                    console.error("Error fetching products:", err);
+                } finally {
+                    setLoading(false);
+                }
+            } else {
+                console.warn("User not logged in — cannot fetch products");
             }
-        };
+        });
 
-        fetchProducts();
+        return () => unsubscribe();
     }, []);
 
     if (loading) return <Loader />
@@ -110,7 +116,7 @@ const Featured = () => {
                                 {filteredProducts.length > 0 ? (
                                     filteredProducts.map((item) => (
                                         <Card
-                                        onClick={() => router.push(`/products/${item._id}`)}
+                                            onClick={() => router.push(`/products/${item._id}`)}
                                             key={item._id}
                                             className="group cursor-pointer text-center border-2 transition-all duration-300 hover:translate-y-1 hover:-translate-x-1 hover:shadow-lg"
                                         >
