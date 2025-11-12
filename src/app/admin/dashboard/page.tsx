@@ -30,6 +30,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescript
 import { AlertDialogCancel } from "@radix-ui/react-alert-dialog";
 import { auth } from "@/lib/firebaseConfig";
 import axiosInstance from "@/lib/axiosInstance";
+import axios from "axios";
 
 type ProductState = {
     _id: string;
@@ -171,9 +172,8 @@ export default function AdminDashboard() {
     useEffect(() => {
         const fetchOrders = async () => {
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/orders`);
-                const data = await res.json();
-                setOrders(data);
+                const res = await axiosInstance(`/api/orders`);
+                setOrders(res.data.data);
             } catch (error) {
                 console.error(error);
             } finally {
@@ -236,7 +236,7 @@ export default function AdminDashboard() {
     useEffect(() => {
         async function fetchProducts() {
             try {
-                const res = await axiosInstance(`/api/products`);
+                const res = await axios(`/api/products`);
 
                 const data: ProductDoc[] = await res.data.data;
 

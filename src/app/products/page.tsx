@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import axiosInstance from "@/lib/axiosInstance";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import axios from "axios";
 
 export default function Products() {
   const [products, setProducts] = useState<ProductDoc[]>([]);
@@ -59,7 +60,7 @@ export default function Products() {
       if (user) {
         setLoading(true);
         try {
-          const res = await axiosInstance.get("/api/products");
+          const res = await axios("/api/products");
           setProducts(res.data.data);
         } catch (err) {
           console.error("Error fetching products:", err);

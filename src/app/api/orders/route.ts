@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Order from "@/models/Order";
+import { verifyFirebaseToken } from "@/lib/verifyToken";
 
 // handle POST for creating a new order
 export const POST = async (req: NextRequest) => {
@@ -32,7 +33,7 @@ export const POST = async (req: NextRequest) => {
     });
 
     return NextResponse.json(
-      { message: "Order created successfully", orderId: newOrder._id, order:newOrder },
+      { message: "Order created successfully", orderId: newOrder._id, order: newOrder },
       { status: 201 }
     );
   } catch (error) {
@@ -45,13 +46,23 @@ export const POST = async (req: NextRequest) => {
 };
 
 // handle GET for fetching orders
-export async function GET() {
-  await connectDB();
+export async function GET(req: NextRequest) {
   try {
+    await connectDB();
+
+    const { valid, message } = await verifyFirebaseToken(req);
+    if (!valid) {
+      return NextResponse.json({ success: false, message }, { status: 401 });
+    }
+
     const orders = await Order.find().sort({ createdAt: -1 });
-    return NextResponse.json(orders);
+    return NextResponse.json({ success: true, data: orders }, { status: 200 });
   } catch (error) {
-    return NextResponse.json({ message: "Failed to fetch orders", error }, { status: 500 });
+    console.error("Error fetching orders:", error);
+    return NextResponse.json(
+      { success: false, message: "Failed to fetch orders" },
+      { status: 500 }
+    );
   }
 }
 

@@ -7,11 +7,6 @@ export async function GET(req: NextRequest) {
   try {
     await connectDB();
 
-    // Verify Firebase token
-    const { valid, message } = await verifyFirebaseToken(req);
-    if (!valid) {
-      return NextResponse.json({ success: false, message }, { status: 401 })
-    }
     const products = await Product.find();
     return NextResponse.json({ success: true, data: products }, { status: 200 });
   } catch (error: unknown) {
