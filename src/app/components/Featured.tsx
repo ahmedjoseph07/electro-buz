@@ -19,6 +19,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import axiosInstance from "@/lib/axiosInstance";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import axios from "axios";
 
 interface Product {
     _id: string;
@@ -44,24 +45,18 @@ const Featured = () => {
 
     // Fetch all products once
     useEffect(() => {
-        const auth = getAuth();
-        const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                setLoading(true);
-                try {
-                    const res = await axiosInstance.get("/api/products");
-                    setProducts(res.data.data);
-                } catch (err) {
-                    console.error("Error fetching products:", err);
-                } finally {
-                    setLoading(false);
-                }
-            } else {
-                console.warn("User not logged in — cannot fetch products");
+        const fetchProducts = async () => {
+            setLoading(true);
+            try {
+                const res = await axios("/api/products");
+                setProducts(res.data.data);
+            } catch (err) {
+                console.error("Error fetching products:", err);
+            } finally {
+                setLoading(false);
             }
-        });
-
-        return () => unsubscribe();
+        }
+        fetchProducts()
     }, []);
 
     if (loading) return <Loader />

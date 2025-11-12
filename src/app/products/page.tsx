@@ -55,25 +55,19 @@ export default function Products() {
 
   // Fetching all products
   useEffect(() => {
-    const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        setLoading(true);
-        try {
-          const res = await axios("/api/products");
-          setProducts(res.data.data);
-        } catch (err) {
-          console.error("Error fetching products:", err);
-        } finally {
-          setLoading(false);
-        }
-      } else {
-        console.warn("User not logged in — cannot fetch products");
+    const fetchProducts = async()=>{
+      setLoading(true);
+      try {
+        const res = await axios("/api/products");
+        setProducts(res.data.data);
+      } catch (err) {
+        console.error("Error fetching products:", err);
+      } finally {
+        setLoading(false);
       }
-    });
-
-    return () => unsubscribe();
-  }, []);
+    }
+     fetchProducts()
+  },[]);
 
   if (loading) return <Loader />;
 
