@@ -9,6 +9,10 @@ export interface ProductDoc extends Document {
   category: string;
   stock: number;
   featured: boolean;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+  features?: string[];
+  diagrams?: string[];
 }
 
 const ProductSchema = new Schema<ProductDoc>(
@@ -20,6 +24,8 @@ const ProductSchema = new Schema<ProductDoc>(
     category: { type: String },
     stock: { type: Number, default: 0 },
     featured: { type: Boolean, default: false },
+    features: [{ type: String }], // list of product features
+    diagrams: [{ type: String }], // list of image URLs for diagrams
   },
   { timestamps: true }
 );

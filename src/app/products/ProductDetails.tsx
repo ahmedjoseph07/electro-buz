@@ -11,18 +11,25 @@ import Loader from "@/components/ui/loader";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import axios from "axios";
+
+interface ProductDoc {
+  _id: string;
+  title: string;
+  description: string;
+  price: number;
+  image?: string;
+  category?: string;
+  stock: number;
+  featured: boolean;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+  features?: string[];
+  diagrams?: string[];
+}
 
 interface ProductDetailsProps {
-  product: {
-    _id: string;
-    title: string;
-    description: string;
-    price: number;
-    image?: string;
-    category?: string;
-    createdAt?: string | Date;
-    updatedAt?: string | Date;
-  };
+  product: ProductDoc;
 }
 
 export default function ProductDetails({ product }: ProductDetailsProps) {
@@ -34,7 +41,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
   );
 
   const [isClient, setIsClient] = useState(false);
-  const [allProducts, setAllProducts] = useState<ProductDetailsProps["product"][]>([]);
+  const [allProducts, setAllProducts] = useState<ProductDoc[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -43,12 +50,25 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
   useEffect(() => {
     async function fetchProducts() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/products`);
-        if (!res.ok) throw new Error("Failed to fetch products");
-        const data: ProductDetailsProps["product"][] = await res.json();
-        setAllProducts(data);
+        const res = await axios.get("/api/products");
+        const data: ProductDoc[] = res.data.data;
+
+        const productsState: ProductDoc[] = data.map((p) => ({
+          _id: p._id,
+          title: p.title,
+          description: p.description,
+          price: p.price,
+          image: p.image,
+          category: p.category,
+          stock: p.stock,
+          featured: p.featured,
+          createdAt: p.createdAt,
+          updatedAt: p.updatedAt,
+        }));
+
+        setAllProducts(productsState);
       } catch (err) {
-        console.error(err);
+        console.error("Fetch products error:", err);
       } finally {
         setLoading(false);
       }
@@ -58,12 +78,12 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 
   if (!isClient || loading) return <Loader />;
 
-  // Apply search filter on all products
+  // Search filter
   const filteredProducts = allProducts.filter((p) =>
     p.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // If user searches and no products found
+  // No results found
   if (searchTerm && filteredProducts.length === 0) {
     return (
       <section className="py-20 bg-white flex flex-col items-center justify-center px-6">
@@ -74,10 +94,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           </p>
           <Button
             className="flex items-center gap-2 justify-center"
-            onClick={() => {
-              setSearchTerm("");
-
-            }}
+            onClick={() => setSearchTerm("")}
           >
             <ArrowLeft className="w-4 h-4" /> Go Back
           </Button>
@@ -91,13 +108,12 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
     (p) => p.category === product.category && p._id !== product._id
   );
 
-  const serializeProduct = (p: typeof product) => ({
+  const serializeProduct = (p: ProductDoc) => ({
     ...p,
-    _id: p._id?.toString(),
+    _id: p._id.toString(),
     createdAt: p.createdAt ? new Date(p.createdAt).toISOString() : null,
     updatedAt: p.updatedAt ? new Date(p.updatedAt).toISOString() : null,
   });
-
 
   return (
     <section className="py-10 bg-white mt-20 flex flex-col items-center md:px-20 space-y-10">
@@ -111,7 +127,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         </p>
       </div>
 
-      {/* Global Search bar */}
+      {/* Global Search */}
       <div className="relative w-full max-w-md mb-6">
         <input
           type="text"
@@ -125,7 +141,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         </span>
       </div>
 
-      {/* Show search results if searching */}
+      {/* Search results */}
       {searchTerm ? (
         <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-5xl w-full">
           {filteredProducts.map((p) => (
@@ -133,7 +149,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
               <HoverCardTrigger asChild>
                 <Link
                   href={`/products/${p._id}`}
-                  className="flex flex-col items-center border border-cyan-500 rounded-xl p-4  transition-all duration-300"
+                  className="flex flex-col items-center border border-cyan-500 rounded-xl p-4 transition-all duration-300"
                 >
                   <div className="w-40 h-40 relative">
                     <Image
@@ -157,7 +173,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         </div>
       ) : (
         <>
-          {/* Main Product + Similar Products */}
+          {/* Product + Similar */}
           <div className="flex flex-col-reverse lg:flex-row gap-10 max-w-6xl w-full">
             {/* Similar Products */}
             {similarProducts.length > 0 ? (
@@ -166,51 +182,37 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                   Similar Products
                 </h3>
                 <div className="flex flex-col gap-4 max-h-[400px] overflow-y-auto border border-cyan-500 rounded-2xl p-2">
-                  {similarProducts.length > 0 ? (
-                    <div className="flex flex-col gap-3">
-                      {similarProducts.map((p) => (
-                        <Link
-                          key={p._id}
-                          href={`/products/${p._id}`}
-                          className="flex items-center gap-3 p-3 border rounded-lg transition-all duration-300 hover:shadow-md"
-                        >
-                          <div className="overflow-hidden w-20 h-20 rounded-md bg-gray-100 flex-shrink-0 flex justify-center items-center">
-                            <Image
-                              width={80}
-                              height={80}
-                              src={p.image || "https://via.placeholder.com/80x80?text=No+Image"}
-                              alt={p.title}
-                              className="object-contain w-full h-full"
-                            />
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="text-sm font-semibold text-cyan-600 line-clamp-1">
-                              {p.title}
-                            </span>
-                            <span className="text-cyan-600 text-xl font-bold line-clamp-1">
-                              ৳{p.price}
-                            </span>
-                            {p.description && (
-                              <span className="text-gray-600 text-sm line-clamp-2">
-                                {p.description}
-                              </span>
-                            )}
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center min-h-[200px] p-6">
-                      <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                        Similar Products
-                      </h3>
-                      <p className="text-gray-500 italic text-center">
-                        No similar products found
-                      </p>
-                    </div>
-                  )}
+                  {similarProducts.map((p) => (
+                    <Link
+                      key={p._id}
+                      href={`/products/${p._id}`}
+                      className="flex items-center gap-3 p-3 border rounded-lg transition-all duration-300 hover:shadow-md"
+                    >
+                      <div className="overflow-hidden w-20 h-20 rounded-md bg-gray-100 flex-shrink-0 flex justify-center items-center">
+                        <Image
+                          width={80}
+                          height={80}
+                          src={p.image || "https://via.placeholder.com/80x80?text=No+Image"}
+                          alt={p.title}
+                          className="object-contain w-full h-full"
+                        />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-semibold text-cyan-600 line-clamp-1">
+                          {p.title}
+                        </span>
+                        <span className="text-cyan-600 text-xl font-bold line-clamp-1">
+                          ৳{p.price}
+                        </span>
+                        {p.stock !== undefined && (
+                          <span className="text-gray-600 text-sm">
+                            Stock: {p.stock > 0 ? p.stock : "Out of stock"}
+                          </span>
+                        )}
+                      </div>
+                    </Link>
+                  ))}
                 </div>
-
               </div>
             ) : (
               <div className="lg:w-1/3 flex border rounded-2xl cursor-pointer border-cyan-500 flex-col items-center justify-center min-h-[200px]">
@@ -224,10 +226,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
             )}
 
             {/* Product Info */}
-            <div
-              className="lg:w-2/3 flex flex-col md:flex-row bg-white border border-cyan-500 rounded-2xl shadow-lg overflow-hidden"
-              style={{ minHeight: "400px" }}
-            >
+            <div className="lg:w-2/3 flex flex-col md:flex-row bg-white border border-cyan-500 rounded-2xl shadow-lg overflow-hidden">
               {/* Image */}
               <div className="relative w-full md:w-1/2 h-96 md:h-[400px] flex-shrink-0">
                 <Image
@@ -238,22 +237,22 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                 />
               </div>
 
-              {/* Info & Cart */}
+              {/* Info + Cart */}
               <div className="flex flex-col justify-between p-6 md:w-1/2">
                 <div>
                   <h3 className="text-2xl font-semibold text-cyan-600 mb-2">
                     {product.title}
                   </h3>
-                  <p className="text-gray-600 mb-4 line-clamp-4">
-                    {product.description}
-                  </p>
-                  <p className="text-3xl font-extrabold text-cyan-600 mb-4">
-                    ৳{product.price}
-                  </p>
-                  <p className="text-sm text-gray-600 mb-2">
+                  <p className="text-gray-600 mb-4 line-clamp-4">{product.description}</p>
+                  <p className="text-3xl font-extrabold text-cyan-600 mb-4">৳{product.price}</p>
+                  <p className="text-sm text-gray-600 mb-1">
                     Category:{" "}
-                    <span className="font-medium">
-                      {product.category || "Uncategorized"}
+                    <span className="font-medium">{product.category || "Uncategorized"}</span>
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    Stock:{" "}
+                    <span className={product.stock > 0 ? "text-green-600" : "text-red-500"}>
+                      {product.stock > 0 ? `${product.stock} available` : "Out of stock"}
                     </span>
                   </p>
                 </div>
@@ -269,9 +268,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                       >
                         <Minus />
                       </Button>
-                      <span className="text-lg font-semibold">
-                        {cartItem.quantity}
-                      </span>
+                      <span className="text-lg font-semibold">{cartItem.quantity}</span>
                       <Button
                         size="sm"
                         className="px-3"
@@ -290,10 +287,12 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                     </div>
                   ) : (
                     <Button
-                      className="flex items-center gap-2 justify-center"
+                      className="flex items-center gap-2 justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                       onClick={() => dispatch(addToCart(serializeProduct(product)))}
+                      disabled={product.stock <= 0}
                     >
-                      <ShoppingCart className="w-4 h-4" /> Add to Cart
+                      <ShoppingCart className="w-4 h-4" />
+                      {product.stock <= 0 ? "Out of Stock" : "Add to Cart"}
                     </Button>
                   )}
                 </div>
@@ -301,29 +300,74 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
             </div>
           </div>
 
-          {/* Tabs Section */}
+          {/* Tabs */}
           <div className="max-w-6xl w-full mt-12 bg-white p-6 rounded-2xl shadow-sm border border-cyan-500">
             <Tabs defaultValue="spec">
               <TabsList className="flex justify-center sm:gap-4 md:gap-10 border-b pb-2">
-                <TabsTrigger className="cursor-pointer" value="spec">
-                  Specs
-                </TabsTrigger>
-                <TabsTrigger className="cursor-pointer" value="diagrams">
-                  Diagrams
-                </TabsTrigger>
-                <TabsTrigger className="cursor-pointer" value="reviews">
-                  Reviews
-                </TabsTrigger>
+                <TabsTrigger className="cursor-pointer" value="spec">Specs</TabsTrigger>
+                <TabsTrigger className="cursor-pointer" value="diagrams">Diagrams</TabsTrigger>
+                <TabsTrigger className="cursor-pointer" value="reviews">Reviews</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="spec" className="pt-6 text-gray-700">
-                <p>{product.description}</p>
+              {/* Specs */}
+              <TabsContent value="spec" className="pt-6 text-gray-700 space-y-4">
+                {product.features && product.features.length > 0 ? (
+                  <>
+                    <h4 className="text-lg font-semibold text-cyan-600 mb-2">Key Features</h4>
+                    <ul className="list-disc pl-6 space-y-1">
+                      {product.features.map((feature, i) => (
+                        <li key={i} className="text-gray-700">
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                ) : (
+                  <p className="text-gray-600 italic">
+                    {product.description || "No detailed specifications available."}
+                  </p>
+                )}
+
+                {product.description && product.features && product.features.length > 0 && (
+                  <>
+                    <h4 className="text-lg font-semibold text-cyan-600 mt-6 mb-2">
+                      Description
+                    </h4>
+                    <p className="text-gray-700 leading-relaxed">{product.description}</p>
+                  </>
+                )}
               </TabsContent>
+
+              {/* Diagrams */}
               <TabsContent value="diagrams" className="pt-6 text-gray-700">
-                <p>Diagrams and technical illustrations</p>
+                {product.diagrams && product.diagrams.length > 0 ? (
+                  <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
+                    {product.diagrams.map((imgUrl, i) => (
+                      <div
+                        key={i}
+                        className="border border-cyan-300 rounded-xl p-3 bg-gray-50 shadow-sm hover:shadow-md transition-all duration-300"
+                      >
+                        <div className="relative w-full h-64">
+                          <Image
+                            src={"/"}
+                            alt={`Diagram ${i + 1}`}
+                            fill
+                            className="object-contain rounded-lg"
+                          />
+                        </div>
+                        <p className="text-center text-gray-600 text-sm mt-2">
+                          Diagram {i + 1}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-600 italic">No diagrams available for this product.</p>
+                )}
               </TabsContent>
+
               <TabsContent value="reviews" className="pt-6 text-gray-700">
-                <p>Reviews + Comments </p>
+                <p>Reviews + Comments</p>
               </TabsContent>
             </Tabs>
           </div>

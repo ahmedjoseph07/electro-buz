@@ -78,7 +78,6 @@ export default function CartPage() {
 
             <div className="flex-1">
               <div className="font-semibold">{it.title}</div>
-              <div className="text-sm text-gray-500">{it.description}</div>
               <div className="font-bold my-2">&#2547;{it.price.toFixed(2)}</div>
             </div>
 

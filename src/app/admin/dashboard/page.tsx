@@ -32,16 +32,21 @@ import { auth } from "@/lib/firebaseConfig";
 import axiosInstance from "@/lib/axiosInstance";
 import axios from "axios";
 
-type ProductState = {
+interface ProductState {
     _id: string;
     title: string;
-    description?: string;
+    description: string;
     price: number;
-    image?: string;
+    image: string;
     category: "Microcontroller" | "Sensor" | "Actuator" | "Misc";
     stock: number;
     featured: boolean;
-};
+    features: string[];
+    diagrams: string[];
+    featuresInput: string;
+    diagramsInput: string;
+}
+
 
 interface User {
     _id: string;
@@ -101,7 +106,12 @@ export default function AdminDashboard() {
         category: "",
         stock: "",
         featured: false,
+        features: [] as string[],
+        diagrams: [] as string[],
+        featuresInput: "",
+        diagramsInput: "",
     });
+
     const [products, setProducts] = useState<ProductState[]>([]);
     const [selectedProduct, setSelectedProduct] = useState<ProductState | null>(null);
     const [openEditModal, setOpenEditModal] = useState(false);
@@ -172,7 +182,7 @@ export default function AdminDashboard() {
     useEffect(() => {
         const fetchOrders = async () => {
             try {
-                const res = await axiosInstance(`/api/orders`);
+                const res = await axiosInstance(`${process.env.NEXT_PUBLIC_BASE_URL}/api/orders`);
                 setOrders(res.data.data);
             } catch (error) {
                 console.error(error);
@@ -236,7 +246,7 @@ export default function AdminDashboard() {
     useEffect(() => {
         async function fetchProducts() {
             try {
-                const res = await axios(`/api/products`);
+                const res = await axios(`${process.env.NEXT_PUBLIC_BASE_URL}/api/products`);
 
                 const data: ProductDoc[] = await res.data.data;
 
@@ -250,6 +260,10 @@ export default function AdminDashboard() {
                     category: p.category as ProductState["category"],
                     stock: p.stock,
                     featured: p.featured,
+                    features: p.features || [],
+                    diagrams: p.diagrams || [],
+                    featuresInput: (p.features || []).join(","),
+                    diagramsInput: (p.diagrams || []).join(","),  
                 }));
 
                 setProducts(productsState);
@@ -275,11 +289,25 @@ export default function AdminDashboard() {
             return;
         }
 
+        const featuresArray = newProduct.featuresInput
+            .split(",")
+            .map((item) => item.trim())
+            .filter(Boolean);
+
+        const diagramsArray = newProduct.diagramsInput
+            .split(",")
+            .map((item) => item.trim())
+            .filter(Boolean);
+
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/products/add`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ...newProduct }),
+                body: JSON.stringify({
+                    ...newProduct,
+                    features: featuresArray,
+                    diagrams: diagramsArray,
+                }),
             });
 
             const data = await res.json();
@@ -300,6 +328,10 @@ export default function AdminDashboard() {
                         category: data.product.category as ProductState["category"],
                         stock: data.product.stock,
                         featured: data.product.featured,
+                        features: data.product.features || [],
+                        diagrams: data.product.diagrams || [],
+                        featuresInput: data.product.features.join(","),
+                        diagramsInput: data.product.diagrams.join(","),
                     }
                 ]);
 
@@ -311,6 +343,10 @@ export default function AdminDashboard() {
                     category: "",
                     stock: "",
                     featured: false,
+                    features: [],
+                    diagrams: [],
+                    featuresInput: "",
+                    diagramsInput: "",
                 });
             } else {
                 toast.warning(data.message);
@@ -320,18 +356,44 @@ export default function AdminDashboard() {
         }
     };
 
+
+    const openEdit = (product: ProductState) => {
+        setSelectedProduct({
+            ...product,
+            featuresInput: product.features?.join(",") || "",
+            diagramsInput: product.diagrams?.join(",") || "",
+        });
+        console.log(selectedProduct)
+        setOpenEditModal(true);
+    };
+
     // --- Edit Product Handler ---
     const handleEditProduct = async () => {
         if (!selectedProduct) return;
+
+        // Convert the comma-separated strings into arrays before sending
+        const featuresArray = selectedProduct.featuresInput
+            ?.split(",")
+            .map((item) => item.trim()).filter(Boolean);
+
+        const diagramsArray = selectedProduct.diagramsInput
+            ?.split(",")
+            .map((item) => item.trim()).filter(Boolean);
+
 
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/products/edit`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(selectedProduct),
+                body: JSON.stringify({
+                    ...selectedProduct,
+                    features: featuresArray,
+                    diagrams: diagramsArray,
+                }),
             });
 
             const data = await res.json();
+            console.log(data)
 
             if (res.ok) {
                 toast.success(data.message);
@@ -339,7 +401,13 @@ export default function AdminDashboard() {
                     prev.map((p) => (p._id === selectedProduct._id ? data.product : p))
                 );
                 setOpenEditModal(false);
-                setSelectedProduct(null);
+
+                // Update selectedProduct with returned data from API
+                setSelectedProduct({
+                    ...data.product,
+                    featuresInput: data.product.features?.join(",") || "",
+                    diagramsInput: data.product.diagrams?.join(",") || "",
+                });
             } else {
                 toast.error(data.message);
             }
@@ -348,6 +416,7 @@ export default function AdminDashboard() {
             console.error(err);
         }
     };
+
 
     // --- Order Status Change Handler ---
     const handleStatusChange = async (orderId: string, newStatus: Order["status"]) => {
@@ -622,16 +691,16 @@ export default function AdminDashboard() {
 
                     {/* Add Product Modal */}
                     <Dialog open={openAddModal} onOpenChange={setOpenAddModal}>
-                        <DialogContent className="max-w-md rounded-2xl border border-cyan-200 shadow-lg">
+                        <DialogContent className="max-w-2xl w-full max-h-[90vh] overflow-y-auto rounded-2xl border border-cyan-200 shadow-lg">
                             <DialogHeader>
                                 <DialogTitle className="text-xl font-semibold text-cyan-700">
                                     Add New Product
                                 </DialogTitle>
                             </DialogHeader>
 
-                            <div className="space-y-4 mt-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                 {/* Title */}
-                                <div>
+                                <div className="col-span-1 md:col-span-2">
                                     <Label className="text-sm text-gray-700">Title</Label>
                                     <Input
                                         className="border-cyan-500 focus:border-0"
@@ -644,7 +713,7 @@ export default function AdminDashboard() {
                                 </div>
 
                                 {/* Description */}
-                                <div>
+                                <div className="col-span-1 md:col-span-2">
                                     <Label className="text-sm text-gray-700">Description</Label>
                                     <Textarea
                                         className="border-cyan-500 focus:border-0"
@@ -706,8 +775,42 @@ export default function AdminDashboard() {
                                     />
                                 </div>
 
-                                {/* Image Upload (Cloudinary Unsigned) */}
-                                <div>
+                                {/* Features */}
+                                <div className="col-span-1 md:col-span-2">
+                                    <Label className="text-sm text-gray-700">Features</Label>
+                                    <Textarea
+                                        className="border-cyan-500 focus:border-0"
+                                        placeholder="Enter comma separated features (e.g. Bluetooth,WiFi,GPS)"
+                                        rows={3}
+                                        value={newProduct.featuresInput}
+                                        onChange={(e) =>
+                                            setNewProduct({
+                                                ...newProduct,
+                                                featuresInput: e.target.value,
+                                            })
+                                        }
+                                    />
+                                </div>
+
+                                {/* Diagrams */}
+                                <div className="col-span-1 md:col-span-2">
+                                    <Label className="text-sm text-gray-700">Diagram Image URLs</Label>
+                                    <Textarea
+                                        className="border-cyan-500 focus:border-0"
+                                        placeholder="Enter comma separated URLs"
+                                        rows={3}
+                                        value={newProduct.diagramsInput}
+                                        onChange={(e) =>
+                                            setNewProduct({
+                                                ...newProduct,
+                                                diagramsInput: e.target.value,
+                                            })
+                                        }
+                                    />
+                                </div>
+
+                                {/* Image Upload */}
+                                <div className="col-span-1 md:col-span-2">
                                     <Label className="text-sm text-gray-700">Product Image</Label>
                                     <Input
                                         className="border-cyan-500 focus:border-0"
@@ -729,20 +832,14 @@ export default function AdminDashboard() {
                                                 toast.loading("Uploading image...");
                                                 const res = await fetch(
                                                     `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-                                                    {
-                                                        method: "POST",
-                                                        body: formData,
-                                                    }
+                                                    { method: "POST", body: formData }
                                                 );
-
                                                 const data = await res.json();
                                                 toast.dismiss();
                                                 if (data.secure_url) {
                                                     setNewProduct((prev) => ({ ...prev, image: data.secure_url }));
                                                     toast.success("Image uploaded successfully!");
-                                                } else {
-                                                    toast.error("Upload failed!");
-                                                }
+                                                } else toast.error("Upload failed!");
                                             } catch (err) {
                                                 toast.dismiss();
                                                 toast.error("Image upload failed!");
@@ -751,13 +848,12 @@ export default function AdminDashboard() {
                                         }}
                                     />
 
-                                    {/* Preview */}
                                     {newProduct.image && (
                                         <div className="mt-3 flex items-center gap-3">
                                             <Image
                                                 width={96}
                                                 height={96}
-                                                src={newProduct?.image}
+                                                src={newProduct.image}
                                                 alt="Preview"
                                                 className="w-24 h-24 object-cover rounded-md border border-cyan-200 shadow-sm"
                                             />
@@ -774,7 +870,7 @@ export default function AdminDashboard() {
                                 </div>
 
                                 {/* Featured */}
-                                <div className="flex items-center gap-2">
+                                <div className="col-span-1 md:col-span-2 flex items-center gap-2 mt-2">
                                     <Checkbox
                                         checked={newProduct.featured}
                                         onCheckedChange={(v) =>
@@ -787,7 +883,7 @@ export default function AdminDashboard() {
                                 </div>
                             </div>
 
-                            <DialogFooter className="mt-6">
+                            <DialogFooter className="mt-6 sticky bottom-0 bg-white pt-3">
                                 <Button onClick={handleAddProduct} className="w-full">
                                     <SaveIcon /> Add Product
                                 </Button>
@@ -795,205 +891,221 @@ export default function AdminDashboard() {
                         </DialogContent>
                     </Dialog>
 
-                    {/* Edit Product Modal */}
+                    {/*  Edit Product Modal */}
                     <Dialog open={openEditModal} onOpenChange={setOpenEditModal}>
-                        <DialogContent className="max-w-md rounded-2xl border border-cyan-200 shadow-lg">
+                        <DialogContent className="max-w-2xl w-full max-h-[90vh] overflow-y-auto rounded-2xl border border-cyan-200 shadow-lg">
                             <DialogHeader>
                                 <DialogTitle className="text-xl font-semibold text-cyan-700">
                                     Edit Product
                                 </DialogTitle>
                             </DialogHeader>
-                            <Dialog open={openEditModal} onOpenChange={setOpenEditModal}>
-                                <DialogContent className="max-w-md rounded-2xl border border-cyan-200 shadow-lg">
-                                    <DialogHeader>
-                                        <DialogTitle className="text-xl font-semibold text-cyan-700">
-                                            Edit Product
-                                        </DialogTitle>
-                                    </DialogHeader>
 
-                                    {selectedProduct && (
-                                        <div className="space-y-4 mt-4">
-                                            <div>
-                                                <Label>Title</Label>
-                                                <Input
-                                                    className="border-cyan-500 focus:border-0"
-                                                    value={selectedProduct.title}
-                                                    onChange={(e) =>
-                                                        setSelectedProduct({ ...selectedProduct, title: e.target.value })
-                                                    }
+                            {selectedProduct && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                    {/* Title */}
+                                    <div className="col-span-1 md:col-span-2">
+                                        <Label>Title</Label>
+                                        <Input
+                                            className="border-cyan-500 focus:border-0"
+                                            value={selectedProduct.title}
+                                            onChange={(e) =>
+                                                setSelectedProduct({ ...selectedProduct, title: e.target.value })
+                                            }
+                                        />
+                                    </div>
+
+                                    {/* Description */}
+                                    <div className="col-span-1 md:col-span-2">
+                                        <Label>Description</Label>
+                                        <Textarea
+                                            className="border-cyan-500 focus:border-0"
+                                            value={selectedProduct.description || ""}
+                                            onChange={(e) =>
+                                                setSelectedProduct({
+                                                    ...selectedProduct,
+                                                    description: e.target.value,
+                                                })
+                                            }
+                                        />
+                                    </div>
+
+                                    {/* Price */}
+                                    <div>
+                                        <Label>Price</Label>
+                                        <Input
+                                            className="border-cyan-500 focus:border-0"
+                                            type="number"
+                                            value={selectedProduct.price}
+                                            onChange={(e) =>
+                                                setSelectedProduct({
+                                                    ...selectedProduct,
+                                                    price: Number(e.target.value),
+                                                })
+                                            }
+                                        />
+                                    </div>
+
+                                    {/* Category */}
+                                    <div>
+                                        <Label>Category</Label>
+                                        <Select
+                                            value={selectedProduct.category}
+                                            onValueChange={(v) =>
+                                                setSelectedProduct({
+                                                    ...selectedProduct,
+                                                    category: v as ProductState["category"],
+                                                })
+                                            }
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select a category" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="Microcontroller">Microcontroller</SelectItem>
+                                                <SelectItem value="Sensor">Sensor</SelectItem>
+                                                <SelectItem value="Actuator">Actuator</SelectItem>
+                                                <SelectItem value="Misc">Misc</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    {/* Stock */}
+                                    <div>
+                                        <Label>Stock</Label>
+                                        <Input
+                                            className="border-cyan-500 focus:border-0"
+                                            type="number"
+                                            value={selectedProduct.stock}
+                                            onChange={(e) =>
+                                                setSelectedProduct({
+                                                    ...selectedProduct,
+                                                    stock: Number(e.target.value),
+                                                })
+                                            }
+                                        />
+                                    </div>
+
+                                    {/* Features */}
+                                    <div className="col-span-1 md:col-span-2">
+                                        <Label className="text-sm text-gray-700">Features</Label>
+                                        <Textarea
+                                            className="border-cyan-500 focus:border-0"
+                                            placeholder="Enter comma separated features"
+                                            rows={3}
+                                            value={selectedProduct.featuresInput || ""}
+                                            onChange={(e) =>
+                                                setSelectedProduct({
+                                                    ...selectedProduct,
+                                                    featuresInput: e.target.value,
+                                                })
+                                            }
+                                        />
+                                    </div>
+
+                                    {/* Diagrams */}
+                                    <div className="col-span-1 md:col-span-2">
+                                        <Label className="text-sm text-gray-700">Diagram Image URLs</Label>
+                                        <Textarea
+                                            className="border-cyan-500 focus:border-0"
+                                            placeholder="Enter comma separated diagram URLs"
+                                            rows={3}
+                                            value={selectedProduct.diagramsInput || ""}
+                                            onChange={(e) =>
+                                                setSelectedProduct({
+                                                    ...selectedProduct,
+                                                    diagramsInput: e.target.value,
+                                                })
+                                            }
+                                        />
+                                    </div>
+
+                                    {/* Image Upload */}
+                                    <div className="col-span-1 md:col-span-2">
+                                        <Label>Product Image</Label>
+                                        <Input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={async (e: React.ChangeEvent<HTMLInputElement>) => {
+                                                const file = e.target.files?.[0];
+                                                if (!file) return;
+
+                                                const formData = new FormData();
+                                                formData.append("file", file);
+                                                formData.append(
+                                                    "upload_preset",
+                                                    process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET as string
+                                                );
+                                                formData.append("folder", "products");
+
+                                                try {
+                                                    toast.loading("Uploading image...");
+                                                    const res = await fetch(
+                                                        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+                                                        { method: "POST", body: formData }
+                                                    );
+                                                    const data = await res.json();
+                                                    toast.dismiss();
+                                                    if (data.secure_url) {
+                                                        setSelectedProduct((prev) =>
+                                                            prev ? { ...prev, image: data.secure_url } : null
+                                                        );
+                                                        toast.success("Image updated successfully!");
+                                                    } else toast.error("Upload failed!");
+                                                } catch (err) {
+                                                    toast.dismiss();
+                                                    toast.error("Image upload failed!");
+                                                    console.error(err);
+                                                }
+                                            }}
+                                        />
+
+                                        {selectedProduct.image && (
+                                            <div className="mt-3 flex items-center gap-3">
+                                                <Image
+                                                    width={96}
+                                                    height={96}
+                                                    src={selectedProduct.image}
+                                                    alt="Preview"
+                                                    className="w-24 h-24 object-cover rounded-md border border-cyan-200 shadow-sm"
                                                 />
-                                            </div>
-
-                                            <div>
-                                                <Label>Description</Label>
-                                                <Textarea
-                                                    className="border-cyan-500 focus:border-0"
-                                                    value={selectedProduct.description || ""}
-                                                    onChange={(e) =>
-                                                        setSelectedProduct({ ...selectedProduct, description: e.target.value })
-                                                    }
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <Label>Price</Label>
-                                                <Input
-                                                    className="border-cyan-500 focus:border-0"
-                                                    type="number"
-                                                    value={selectedProduct.price}
-                                                    onChange={(e) =>
-                                                        setSelectedProduct({ ...selectedProduct, price: Number(e.target.value) })
-                                                    }
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <Label>Category</Label>
-                                                <Select
-                                                    value={selectedProduct.category}
-                                                    onValueChange={(v) =>
-                                                        setSelectedProduct({ ...selectedProduct, category: v as ProductState["category"] })
+                                                <Button
+                                                    size="sm"
+                                                    onClick={() =>
+                                                        setSelectedProduct((prev) =>
+                                                            prev ? { ...prev, image: "" } : null
+                                                        )
                                                     }
                                                 >
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select a category" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="Microcontroller">Microcontroller</SelectItem>
-                                                        <SelectItem value="Sensor">Sensor</SelectItem>
-                                                        <SelectItem value="Actuator">Actuator</SelectItem>
-                                                        <SelectItem value="Misc">Misc</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
+                                                    Remove
+                                                </Button>
                                             </div>
+                                        )}
+                                    </div>
 
-                                            <div>
-                                                <Label>Stock</Label>
-                                                <Input
-                                                    className="border-cyan-500 focus:border-0"
-                                                    type="number"
-                                                    value={selectedProduct.stock}
-                                                    onChange={(e) =>
-                                                        setSelectedProduct({ ...selectedProduct, stock: Number(e.target.value) })
-                                                    }
-                                                />
-                                            </div>
+                                    {/* Featured */}
+                                    <div className="col-span-1 md:col-span-2 flex items-center gap-2 mt-2">
+                                        <Checkbox
+                                            checked={selectedProduct.featured}
+                                            onCheckedChange={(v) =>
+                                                setSelectedProduct((prev) =>
+                                                    prev ? { ...prev, featured: Boolean(v) } : null
+                                                )
+                                            }
+                                        />
+                                        <Label>Mark as Featured Product</Label>
+                                    </div>
+                                </div>
+                            )}
 
-                                            {/* Image Upload */}
-                                            <div>
-                                                <Label>Product Image</Label>
-                                                <Input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    onChange={async (e: React.ChangeEvent<HTMLInputElement>) => {
-                                                        const file = e.target.files?.[0];
-                                                        if (!file) return;
-
-                                                        const formData = new FormData();
-                                                        formData.append("file", file);
-                                                        formData.append(
-                                                            "upload_preset",
-                                                            process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET as string
-                                                        );
-                                                        formData.append("folder", "products");
-
-                                                        try {
-                                                            toast.loading("Uploading image...");
-                                                            const res = await fetch(
-                                                                `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-                                                                { method: "POST", body: formData }
-                                                            );
-                                                            const data = await res.json();
-                                                            toast.dismiss();
-                                                            if (data.secure_url) {
-                                                                setSelectedProduct((prev) =>
-                                                                    prev ? { ...prev, image: data.secure_url } : null
-                                                                );
-                                                                toast.success("Image updated successfully!");
-                                                            } else toast.error("Upload failed!");
-                                                        } catch (err) {
-                                                            toast.dismiss();
-                                                            toast.error("Image upload failed!");
-                                                            console.error(err);
-                                                        }
-                                                    }}
-                                                />
-
-                                                {selectedProduct.image && (
-                                                    <div className="mt-3 flex items-center gap-3">
-                                                        <Image
-                                                            width={96}
-                                                            height={96}
-                                                            src={selectedProduct.image}
-                                                            alt="Preview"
-                                                            className="w-24 h-24 object-cover rounded-md border border-cyan-200 shadow-sm"
-                                                        />
-                                                        <Button
-                                                            size="sm"
-                                                            onClick={() =>
-                                                                setSelectedProduct((prev) => (prev ? { ...prev, image: "" } : null))
-                                                            }
-                                                        >
-                                                            Remove
-                                                        </Button>
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            {/* Featured */}
-                                            <div className="flex items-center gap-2">
-                                                <Checkbox
-                                                    checked={selectedProduct.featured}
-                                                    onCheckedChange={(v) =>
-                                                        setSelectedProduct((prev) => (prev ? { ...prev, featured: Boolean(v) } : null))
-                                                    }
-                                                />
-                                                <Label>Mark as Featured Product</Label>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    <DialogFooter>
-                                        <Button onClick={handleEditProduct} className="w-full">
-                                            <Save />  Save Changes
-                                        </Button>
-                                    </DialogFooter>
-                                </DialogContent>
-                            </Dialog>
-
-                            <DialogFooter className="mt-6">
-                                <Button
-                                    onClick={async () => {
-                                        if (!selectedProduct) return;
-                                        try {
-                                            const res = await fetch("/api/products/edit", {
-                                                method: "PUT",
-                                                headers: { "Content-Type": "application/json" },
-                                                body: JSON.stringify(selectedProduct),
-                                            });
-                                            const data = await res.json();
-                                            if (res.ok) {
-                                                toast.success(data.message);
-                                                setOpenEditModal(false);
-                                                setProducts((prev) =>
-                                                    prev.map((p) =>
-                                                        p._id === selectedProduct._id ? data.product : p
-                                                    )
-                                                );
-                                            } else toast.error(data.message);
-                                        } catch (err) {
-                                            toast.error("Update failed!");
-                                            console.error(err);
-                                        }
-                                    }}
-                                    className="w-full"
-                                >
-                                    Save Changes
+                            <DialogFooter className="mt-6 sticky bottom-0 bg-white pt-3">
+                                <Button onClick={handleEditProduct} className="w-full">
+                                    <Save /> Save Changes
                                 </Button>
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
 
+                    {/* Product Table */}
                     <div className="h-[400px] w-full overflow-auto border border-gray-200 rounded-md">
                         <div className="min-w-max">
                             <Table>
@@ -1017,10 +1129,7 @@ export default function AdminDashboard() {
                                                 <TableCell className="flex gap-2">
                                                     <Button
                                                         size="sm"
-                                                        onClick={() => {
-                                                            setSelectedProduct(product);
-                                                            setOpenEditModal(true);
-                                                        }}
+                                                        onClick={() => openEdit(product)}
                                                     >
                                                         <Edit /> Edit
                                                     </Button>
