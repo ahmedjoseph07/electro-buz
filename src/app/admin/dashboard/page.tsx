@@ -147,36 +147,31 @@ export default function AdminDashboard() {
     // Analytics Overview Data
     useEffect(() => {
         const fetchData = async () => {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/analytics/overview`);
-            const json = await res.json();
-            setStats(json);
+            const res = await axiosInstance(`/api/analytics/overview`);
+            // const json = await res.json();
+            setStats(res.data);
         };
         fetchData();
     }, [refreshKey]);
 
     // Sales & Category Data
     useEffect(() => {
-        async function fetchData() {
+        const fetchData = async () => {
             try {
                 const [salesRes, catRes] = await Promise.all([
-                    fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/orders/sales`),
-                    fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/products/category-stock`),
+                    axiosInstance.get("/api/orders/sales"),
+                    axiosInstance.get("/api/products/category-stock"),
                 ]);
-
-                const [sales, categories] = await Promise.all([
-                    salesRes.json(),
-                    catRes.json(),
-                ]);
-
-                setSalesData(sales);
-                setCategoryData(categories);
+                setSalesData(salesRes.data);
+                setCategoryData(catRes.data);
             } catch (err) {
-                console.error(err);
+                console.error("Error fetching dashboard data:", err);
             }
-        }
+        };
 
         fetchData();
     }, [refreshKey]);
+
 
     // Orders Data
     useEffect(() => {
@@ -226,8 +221,8 @@ export default function AdminDashboard() {
             }
 
             try {
-                const res = await fetch(`/api/users/role?uid=${user.uid}`);
-                const data = await res.json();
+                const res = await axiosInstance.get(`/api/users/role?uid=${user.uid}`);
+                const data = res.data;
 
                 if (data.role === "admin") {
                     setIsAdmin(true);
@@ -246,9 +241,9 @@ export default function AdminDashboard() {
     useEffect(() => {
         async function fetchProducts() {
             try {
-                const res = await axios(`${process.env.NEXT_PUBLIC_BASE_URL}/api/products`);
+                const res = await axiosInstance.get("/api/products");
 
-                const data: ProductDoc[] = await res.data.data;
+                const data: ProductDoc[] = res.data.data;
 
                 // Map to plain objects
                 const productsState: ProductState[] = data.map((p) => ({
@@ -268,11 +263,12 @@ export default function AdminDashboard() {
 
                 setProducts(productsState);
             } catch (err) {
-                console.error(err);
+                console.error("Error fetching products:", err);
             } finally {
                 setLoading(false);
             }
         }
+
         fetchProducts();
     }, []);
 
