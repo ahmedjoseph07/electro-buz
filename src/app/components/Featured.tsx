@@ -17,8 +17,6 @@ import { Cpu, Cog, Zap, Loader2, MilestoneIcon } from "lucide-react";
 import Loader from "@/components/ui/loader";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import axiosInstance from "@/lib/axiosInstance";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
 import axios from "axios";
 
 interface Product {
@@ -73,7 +71,7 @@ const Featured = () => {
     return (
         <section className="py-14 bg-gray-50">
             <h2 className="text-3xl font-bold text-center mb-4">
-                Explore Our <span className="text-cyan-500">Products ⚡</span>
+                Explore Our <span className="text-cyan-500">Products</span>
             </h2>
 
             <p className="max-w-3xl text-center text-gray-500 mx-6 md:mx-auto mb-10">

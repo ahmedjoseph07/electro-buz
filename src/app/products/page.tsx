@@ -16,8 +16,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import axiosInstance from "@/lib/axiosInstance";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
 import axios from "axios";
 
 export default function Products() {
@@ -186,10 +184,10 @@ export default function Products() {
                 onClick={() => router.push(`/products/${p._id}`)}
                 className="group transition-all duration-300 
                 hover:-translate-x-1 hover:translate-y-1 hover:shadow-lg 
-                rounded-2xl flex flex-col justify-between aspect-square cursor-pointer"
+                rounded-2xl pt-0 flex flex-col justify-between aspect-square cursor-pointer"
               >
                 {/* Image*/}
-                <div className="overflow-hidden flex justify-center items-center bg-gray-100 h-1/2 rounded-t-2xl">
+                <div className="overflow-hidden flex justify-center items-center h-1/2">
                   <Image
                     width={300}
                     height={300}

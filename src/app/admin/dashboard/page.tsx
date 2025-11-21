@@ -29,8 +29,8 @@ import Loader from "@/components/ui/loader";
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { AlertDialogCancel } from "@radix-ui/react-alert-dialog";
 import { auth } from "@/lib/firebaseConfig";
-import axiosInstance from "@/lib/axiosInstance";
 import axios from "axios";
+import axiosInstance from "@/lib/axiosInstance";
 
 interface ProductState {
     _id: string;
@@ -182,7 +182,7 @@ export default function AdminDashboard() {
     useEffect(() => {
         const fetchOrders = async () => {
             try {
-                const res = await axiosInstance(`${process.env.NEXT_PUBLIC_BASE_URL}/api/orders`);
+                const res = await axiosInstance(`/api/orders`);
                 setOrders(res.data.data);
             } catch (error) {
                 console.error(error);
@@ -263,7 +263,7 @@ export default function AdminDashboard() {
                     features: p.features || [],
                     diagrams: p.diagrams || [],
                     featuresInput: (p.features || []).join(","),
-                    diagramsInput: (p.diagrams || []).join(","),  
+                    diagramsInput: (p.diagrams || []).join(","),
                 }));
 
                 setProducts(productsState);
@@ -279,10 +279,10 @@ export default function AdminDashboard() {
     if (!isAdmin) return null;
     if (loading) return <Loader />;
 
-    // --- Refresh Data Handler ---
+    //! --- Refresh Data Handler ---
     const handleDataChange = () => setRefreshKey((prev) => prev + 1);
 
-    // --- Add Product Handler ---
+    //! --- Add Product Handler ---
     const handleAddProduct = async () => {
         if (!newProduct.title || !newProduct.price || !newProduct.category) {
             toast.warning("Please fill all fields");
@@ -294,10 +294,7 @@ export default function AdminDashboard() {
             .map((item) => item.trim())
             .filter(Boolean);
 
-        const diagramsArray = newProduct.diagramsInput
-            .split(",")
-            .map((item) => item.trim())
-            .filter(Boolean);
+        const diagramsArray = newProduct.diagrams || [];
 
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/products/add`, {
@@ -367,7 +364,7 @@ export default function AdminDashboard() {
         setOpenEditModal(true);
     };
 
-    // --- Edit Product Handler ---
+    //! --- Edit Product Handler ---
     const handleEditProduct = async () => {
         if (!selectedProduct) return;
 
@@ -376,11 +373,6 @@ export default function AdminDashboard() {
             ?.split(",")
             .map((item) => item.trim()).filter(Boolean);
 
-        const diagramsArray = selectedProduct.diagramsInput
-            ?.split(",")
-            .map((item) => item.trim()).filter(Boolean);
-
-
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/products/edit`, {
                 method: "PUT",
@@ -388,7 +380,7 @@ export default function AdminDashboard() {
                 body: JSON.stringify({
                     ...selectedProduct,
                     features: featuresArray,
-                    diagrams: diagramsArray,
+                    diagrams: selectedProduct.diagrams,
                 }),
             });
 
@@ -418,7 +410,7 @@ export default function AdminDashboard() {
     };
 
 
-    // --- Order Status Change Handler ---
+    //! --- Order Status Change Handler ---
     const handleStatusChange = async (orderId: string, newStatus: Order["status"]) => {
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/orders`, {
@@ -792,21 +784,83 @@ export default function AdminDashboard() {
                                     />
                                 </div>
 
-                                {/* Diagrams */}
+                                {/* Diagrams Upload */}
                                 <div className="col-span-1 md:col-span-2">
-                                    <Label className="text-sm text-gray-700">Diagram Image URLs</Label>
-                                    <Textarea
-                                        className="border-cyan-500 focus:border-0"
-                                        placeholder="Enter comma separated URLs"
-                                        rows={3}
-                                        value={newProduct.diagramsInput}
-                                        onChange={(e) =>
-                                            setNewProduct({
-                                                ...newProduct,
-                                                diagramsInput: e.target.value,
-                                            })
-                                        }
+                                    <Label className="text-sm text-gray-700">Diagrams</Label>
+                                    <Input
+                                        type="file"
+                                        accept="image/*"
+                                        multiple
+                                        onChange={async (e: React.ChangeEvent<HTMLInputElement>) => {
+                                            const files = e.target.files;
+                                            if (!files || files.length === 0) return;
+
+                                            const uploadedUrls: string[] = [];
+
+                                            for (let i = 0; i < files.length; i++) {
+                                                const file = files[i];
+                                                const formData = new FormData();
+                                                formData.append("file", file);
+                                                formData.append(
+                                                    "upload_preset",
+                                                    process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET as string
+                                                );
+                                                formData.append("folder", "diagrams");
+
+                                                try {
+                                                    toast.loading(`Uploading ${file.name}...`);
+                                                    const res = await fetch(
+                                                        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+                                                        { method: "POST", body: formData }
+                                                    );
+                                                    const data = await res.json();
+                                                    toast.dismiss();
+                                                    if (data.secure_url) uploadedUrls.push(data.secure_url);
+                                                    else toast.error(`Failed to upload ${file.name}`);
+                                                } catch (err) {
+                                                    toast.dismiss();
+                                                    toast.error(`Error uploading ${file.name}`);
+                                                    console.error(err);
+                                                }
+                                            }
+
+                                            setNewProduct((prev) => ({
+                                                ...prev,
+                                                diagrams: [...(prev.diagrams || []), ...uploadedUrls],
+                                            }));
+
+                                            toast.success("All diagrams uploaded!");
+                                        }}
                                     />
+
+                                    {/* Preview uploaded diagrams */}
+                                    {newProduct.diagrams && newProduct.diagrams.length > 0 && (
+                                        <div className="mt-3 flex flex-wrap gap-3">
+                                            {newProduct.diagrams.map((url, idx) => (
+                                                <div key={idx} className="relative">
+                                                    <Image
+                                                        width={96}
+                                                        height={96}
+                                                        src={url}
+                                                        alt={`Diagram ${idx + 1}`}
+                                                        className="w-24 h-24 object-cover rounded-md border border-cyan-200 shadow-sm"
+                                                    />
+                                                    <Button
+                                                        size="sm"
+                                                        className="absolute top-0 right-0"
+                                                        onClick={() =>
+                                                            setNewProduct((prev) => ({
+                                                                ...prev,
+                                                                diagrams: prev.diagrams.filter((_, i) => i !== idx),
+                                                            }))
+                                                        }
+                                                    >
+                                                        <Trash />
+                                                    </Button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Image Upload */}
@@ -883,7 +937,7 @@ export default function AdminDashboard() {
                                 </div>
                             </div>
 
-                            <DialogFooter className="mt-6 sticky bottom-0 bg-white pt-3">
+                            <DialogFooter className="mt-6 w-1/2 sticky bottom-0  pt-3">
                                 <Button onClick={handleAddProduct} className="w-full">
                                     <SaveIcon /> Add Product
                                 </Button>
@@ -1002,22 +1056,91 @@ export default function AdminDashboard() {
                                         />
                                     </div>
 
-                                    {/* Diagrams */}
+                                    {/* Diagrams Upload */}
                                     <div className="col-span-1 md:col-span-2">
-                                        <Label className="text-sm text-gray-700">Diagram Image URLs</Label>
-                                        <Textarea
-                                            className="border-cyan-500 focus:border-0"
-                                            placeholder="Enter comma separated diagram URLs"
-                                            rows={3}
-                                            value={selectedProduct.diagramsInput || ""}
-                                            onChange={(e) =>
-                                                setSelectedProduct({
-                                                    ...selectedProduct,
-                                                    diagramsInput: e.target.value,
-                                                })
-                                            }
+                                        <Label className="text-sm text-gray-700">Diagrams</Label>
+                                        <Input
+                                            type="file"
+                                            accept="image/*"
+                                            multiple
+                                            onChange={async (e: React.ChangeEvent<HTMLInputElement>) => {
+                                                const files = e.target.files;
+                                                if (!files || files.length === 0) return;
+
+                                                const uploadedUrls: string[] = [];
+
+                                                for (let i = 0; i < files.length; i++) {
+                                                    const file = files[i];
+                                                    const formData = new FormData();
+                                                    formData.append("file", file);
+                                                    formData.append(
+                                                        "upload_preset",
+                                                        process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET as string
+                                                    );
+                                                    formData.append("folder", "diagrams");
+
+                                                    try {
+                                                        toast.loading(`Uploading ${file.name}...`);
+                                                        const res = await fetch(
+                                                            `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+                                                            { method: "POST", body: formData }
+                                                        );
+                                                        const data = await res.json();
+                                                        toast.dismiss();
+                                                        if (data.secure_url) uploadedUrls.push(data.secure_url);
+                                                        else toast.error(`Failed to upload ${file.name}`);
+                                                    } catch (err) {
+                                                        toast.dismiss();
+                                                        toast.error(`Error uploading ${file.name}`);
+                                                        console.error(err);
+                                                    }
+                                                }
+
+                                                // Merge with existing diagrams
+                                                setSelectedProduct((prev) =>
+                                                    prev
+                                                        ? { ...prev, diagrams: [...(prev.diagrams || []), ...uploadedUrls] }
+                                                        : null
+                                                );
+
+                                                toast.success("All diagrams uploaded!");
+                                            }}
                                         />
+
+                                        {/* Preview uploaded diagrams */}
+                                        {selectedProduct?.diagrams && selectedProduct.diagrams.length > 0 && (
+                                            <div className="mt-3 flex flex-wrap gap-3">
+                                                {selectedProduct.diagrams.map((url, idx) => (
+                                                    <div key={idx} className="relative">
+                                                        <Image
+                                                            width={96}
+                                                            height={96}
+                                                            src={url}
+                                                            alt={`Diagram ${idx + 1}`}
+                                                            className="w-24 h-24 object-cover rounded-md border border-cyan-200 shadow-sm"
+                                                        />
+                                                        <Button
+                                                            size="sm"
+                                                            className="absolute top-0 right-0"
+                                                            onClick={() =>
+                                                                setSelectedProduct((prev) =>
+                                                                    prev
+                                                                        ? {
+                                                                            ...prev,
+                                                                            diagrams: prev.diagrams.filter((_, i) => i !== idx),
+                                                                        }
+                                                                        : null
+                                                                )
+                                                            }
+                                                        >
+                                                            <Trash />
+                                                        </Button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
+
 
                                     {/* Image Upload */}
                                     <div className="col-span-1 md:col-span-2">
@@ -1097,7 +1220,7 @@ export default function AdminDashboard() {
                                 </div>
                             )}
 
-                            <DialogFooter className="mt-6 sticky bottom-0 bg-white pt-3">
+                            <DialogFooter className="mt-6 sticky bottom-0 w-1/2 pt-3">
                                 <Button onClick={handleEditProduct} className="w-full">
                                     <Save /> Save Changes
                                 </Button>

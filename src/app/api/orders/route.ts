@@ -49,7 +49,6 @@ export const POST = async (req: NextRequest) => {
 export async function GET(req: NextRequest) {
   try {
     await connectDB();
-
     const { valid, message } = await verifyFirebaseToken(req);
     if (!valid) {
       return NextResponse.json({ success: false, message }, { status: 401 });

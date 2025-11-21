@@ -14,7 +14,7 @@ const Banner = () => {
                 <div className="space-y-6 text-center">
                     {/* Heading */}
                     <h1 className="text-3xl lg:text-5xl font-bold mb-4">
-                        Welcome to <span className="font-extrabold text-cyan-500 animate-pulse hover:animate-none">ElectroBuz</span>⚡
+                        Welcome to <span className="font-extrabold text-cyan-500 animate-pulse hover:animate-none">ElectroBuz</span>
                     </h1>
 
                     {/* Description */}

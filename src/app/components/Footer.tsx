@@ -7,7 +7,7 @@ const Footer = () => {
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
                 {/* About Section */}
                 <div className="space-y-4">
-                    <h3 className="text-xl font-bold text-cyan-600">About ElectroBuz⚡</h3>
+                    <h3 className="text-xl font-bold text-cyan-600">About ElectroBuz</h3>
                     <p className="text-gray-600 text-sm">
                         We empower students and makers with top-quality electronics, IoT, and robotics components.
                         Fast delivery, affordable prices, and quality-checked products every time.
@@ -80,7 +80,7 @@ const Footer = () => {
             </div>
 
             <div className="mt-10 text-center text-gray-500 text-sm">
-                &copy; {new Date().getFullYear()} ElectroBuz⚡. All rights reserved.
+                &copy; {new Date().getFullYear()} ElectroBuz. All rights reserved.
             </div>
         </footer>
     );

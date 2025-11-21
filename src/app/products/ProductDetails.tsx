@@ -349,7 +349,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                       >
                         <div className="relative w-full h-64">
                           <Image
-                            src={"/"}
+                            src={imgUrl || "/"}
                             alt={`Diagram ${i + 1}`}
                             fill
                             className="object-contain rounded-lg"
