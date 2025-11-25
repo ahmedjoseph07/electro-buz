@@ -1,11 +1,16 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import Product from "@/models/Product";
 import { connectDB } from "@/lib/mongodb";
+import { verifyFirebaseToken } from "@/lib/verifyToken";
 
-export async function GET() {
+export async function GET(req:NextRequest) {
     await connectDB();
 
     try {
+        // Verify token
+        const { valid, message } = await verifyFirebaseToken(req);
+        if (!valid) return NextResponse.json({ success: false, message: message! }, { status: 401 });
+
         // Group by category and sum the total stock of that category
         const counts = await Product.aggregate([
             {
@@ -15,8 +20,6 @@ export async function GET() {
                 },
             },
         ]);
-
-        console.log(counts);
 
         const result = counts.map((c) => ({
             category: c._id,

@@ -16,6 +16,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
+
+import axiosInstance from "@/lib/axiosInstance";
 import axios from "axios";
 
 export default function Products() {
@@ -43,8 +45,7 @@ export default function Products() {
   }).filter((p) => {
     if (categoryFilter === "all") return true;
     return p.category?.toLowerCase() === categoryFilter.toLowerCase();
-  })
-    ;
+  });
 
 
   useEffect(() => {
@@ -56,7 +57,7 @@ export default function Products() {
     const fetchProducts = async()=>{
       setLoading(true);
       try {
-        const res = await axios("/api/products");
+        const res = await axiosInstance("/api/products");
         setProducts(res.data.data);
       } catch (err) {
         console.error("Error fetching products:", err);

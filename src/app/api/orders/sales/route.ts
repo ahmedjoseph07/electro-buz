@@ -1,11 +1,16 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import Order from "@/models/Order";
 import { connectDB } from "@/lib/mongodb";
+import { verifyFirebaseToken } from "@/lib/verifyToken";
 
-export async function GET() {
+export async function GET(req:NextRequest) {
     await connectDB();
 
     try {
+        const { valid, message } = await verifyFirebaseToken(req);
+        if (!valid) {
+            return NextResponse.json({ success: false, message }, { status: 401 });
+        }
         const now = new Date();
         const sixMonthsAgo = new Date();
         sixMonthsAgo.setMonth(now.getMonth() - 5);

@@ -12,6 +12,7 @@ import { logoutUser } from '@/features/auth/authSlice';
 import { toast } from 'sonner';
 import NavbarCart from './NavbarCart';
 import { usePathname } from "next/navigation";
+import axiosInstance from '@/lib/axiosInstance';
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
@@ -25,10 +26,8 @@ export default function Navbar() {
             if (!user?.uid) return;
 
             try {
-                const res = await fetch(`/api/users/role?uid=${user.uid}`);
-                if (!res.ok) throw new Error("Failed to fetch role");
-
-                const data = await res.json();
+                const res = await axiosInstance(`/api/users/role?uid=${user.uid}`);
+                const data = await res.data;
                 setRole(data.role);
             } catch (error) {
                 console.error("Error fetching role:", error);

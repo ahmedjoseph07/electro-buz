@@ -1,9 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
     try {
-        const { name, email, message } = await req.json();
+        
+        const { name, email,message } = await req.json();
 
         if (!name || !email || !message) {
             return NextResponse.json(

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Product, { ProductDoc } from "@/models/Product";
+import { verifyFirebaseToken } from "@/lib/verifyToken";
 
 export const GET = async (
   req: NextRequest,
@@ -8,6 +9,10 @@ export const GET = async (
 ): Promise<NextResponse> => {
   try {
     await connectDB();
+    // Verify token
+    const { valid, message } = await verifyFirebaseToken(req);
+    if (!valid) return NextResponse.json({ success: false, message: message! }, { status: 401 });
+
     const { id } = await context.params;
     const product = await Product.findById(id).lean<ProductDoc & { _id: string }>();
 

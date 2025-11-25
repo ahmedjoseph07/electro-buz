@@ -1,13 +1,19 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Order from "@/models/Order";
 import Product from "@/models/Product";
 import User from "@/models/User";
+import { verifyFirebaseToken } from "@/lib/verifyToken";
 
-export async function GET() {
+export async function GET(req:NextRequest) {
     await connectDB();
 
     try {
+
+        // Verify token
+        const { valid, message } = await verifyFirebaseToken(req);
+        if (!valid) return NextResponse.json({ success: false, message: message! }, { status: 401 });
+
         const totalOrders = await Order.countDocuments();
         const pendingOrders = await Order.countDocuments({ status: "pending" });
         const totalProducts = await Product.countDocuments();

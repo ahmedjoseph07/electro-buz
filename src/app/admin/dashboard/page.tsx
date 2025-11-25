@@ -28,9 +28,9 @@ import { ProductDoc } from "@/models/Product";
 import Loader from "@/components/ui/loader";
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { AlertDialogCancel } from "@radix-ui/react-alert-dialog";
-import { auth } from "@/lib/firebaseConfig";
 import axios from "axios";
 import axiosInstance from "@/lib/axiosInstance";
+import { onAuthStateChanged, getAuth } from "firebase/auth";
 
 interface ProductState {
     _id: string;
@@ -96,7 +96,6 @@ export default function AdminDashboard() {
     const [salesData, setSalesData] = useState<SalesData[]>([]);
     const [categoryData, setCategoryData] = useState<CategoryData[]>([]);
 
-
     //-- Products State ---
     const [newProduct, setNewProduct] = useState({
         title: "",
@@ -145,47 +144,63 @@ export default function AdminDashboard() {
 
     //! Data Fetching Effects
     // Analytics Overview Data
+
+    const auth = getAuth();
+
     useEffect(() => {
-        const fetchData = async () => {
-            const res = await axiosInstance(`/api/analytics/overview`);
-            // const json = await res.json();
-            setStats(res.data);
-        };
-        fetchData();
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const res = await axiosInstance.get("/api/analytics/overview");
+                setStats(res.data);
+            }
+        });
+
+        return () => unsubscribe();
     }, [refreshKey]);
 
     // Sales & Category Data
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [salesRes, catRes] = await Promise.all([
-                    axiosInstance.get("/api/orders/sales"),
-                    axiosInstance.get("/api/products/category-stock"),
-                ]);
-                setSalesData(salesRes.data);
-                setCategoryData(catRes.data);
-            } catch (err) {
-                console.error("Error fetching dashboard data:", err);
+
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    setLoading(true);
+                    const [salesRes, catRes] = await Promise.all([
+                        axiosInstance.get("/api/orders/sales"),
+                        axiosInstance.get("/api/products/category-stock"),
+                    ]);
+                    setSalesData(salesRes.data);
+                    setCategoryData(catRes.data);
+                } catch (err) {
+                    console.error("Error fetching dashboard data:", err);
+                } finally {
+                    setLoading(false);
+                }
             }
-        };
+        });
 
-        fetchData();
+        return () => unsubscribe();
     }, [refreshKey]);
-
 
     // Orders Data
     useEffect(() => {
-        const fetchOrders = async () => {
-            try {
-                const res = await axiosInstance(`/api/orders`);
-                setOrders(res.data.data);
-            } catch (error) {
-                console.error(error);
-            } finally {
+        const auth = getAuth();
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    const res = await axiosInstance.get("/api/orders");
+                    setOrders(res.data.data);
+                } catch (err) {
+                    console.error("Error fetching orders:", err);
+                } finally {
+                    setLoading(false);
+                }
+            } else {
                 setLoading(false);
             }
-        };
-        fetchOrders();
+        });
+
+        return () => unsubscribe();
     }, []);
 
     // Users Data 
@@ -442,7 +457,7 @@ export default function AdminDashboard() {
     });
 
     return (
-        <div className="mt-20 p-6 max-w-7xl mx-auto space-y-8">
+        <div className="mt-20 p-6 bg-white max-w-7xl mx-auto space-y-8">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <h1 className="text-3xl font-bold">Admin Dashboard</h1>

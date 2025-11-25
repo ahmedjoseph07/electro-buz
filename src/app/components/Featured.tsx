@@ -17,6 +17,7 @@ import { Cpu, Cog, Zap, Loader2, MilestoneIcon } from "lucide-react";
 import Loader from "@/components/ui/loader";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import axiosInstance from "@/lib/axiosInstance";
 import axios from "axios";
 
 interface Product {
