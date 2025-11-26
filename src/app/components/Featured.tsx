@@ -55,7 +55,6 @@ const Featured = () => {
                 setLoading(false);
             }
         }
-        
         fetchProducts()
     }, []);
 

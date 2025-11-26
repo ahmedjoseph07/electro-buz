@@ -12,7 +12,6 @@ export async function GET(req: NextRequest) {
     const { valid, message } = await verifyFirebaseToken(req);
     if (!valid) return NextResponse.json({ success: false, message: message! }, { status: 401 });
 
-
     const { searchParams } = new URL(req.url);
     const uid = searchParams.get("uid");
 

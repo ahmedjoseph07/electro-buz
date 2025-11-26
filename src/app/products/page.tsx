@@ -57,7 +57,7 @@ export default function Products() {
     const fetchProducts = async()=>{
       setLoading(true);
       try {
-        const res = await axiosInstance("/api/products");
+        const res = await axios("/api/products");
         setProducts(res.data.data);
       } catch (err) {
         console.error("Error fetching products:", err);
