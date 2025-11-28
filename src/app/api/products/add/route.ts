@@ -1,9 +1,14 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import Product from "@/models/Product";
 import { connectDB } from "@/lib/mongodb";
+import { verifySafeRequest } from "@/lib/secureRoute";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
+
+    const notAllowed = verifySafeRequest(req);
+    if (notAllowed) return notAllowed;
+
     await connectDB();
     const body = await req.json();
 
@@ -34,11 +39,9 @@ export async function POST(req: Request) {
       category,
       stock,
       featured,
-      features: Array.isArray(features) ? features : [], 
-      diagrams: Array.isArray(diagrams) ? diagrams : [], 
+      features: Array.isArray(features) ? features : [],
+      diagrams: Array.isArray(diagrams) ? diagrams : [],
     });
-
-    console.log("New Product Created:", newProduct);
 
     return NextResponse.json(
       { message: "Product added successfully", product: newProduct },

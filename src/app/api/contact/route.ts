@@ -1,10 +1,14 @@
+import { verifySafeRequest } from "@/lib/secureRoute";
 import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 
 export async function POST(req: NextRequest) {
     try {
-        
-        const { name, email,message } = await req.json();
+
+        const notAllowed = verifySafeRequest(req);
+        if (notAllowed) return notAllowed;
+
+        const { name, email, message } = await req.json();
 
         if (!name || !email || !message) {
             return NextResponse.json(
@@ -18,7 +22,7 @@ export async function POST(req: NextRequest) {
             port: 465,
             secure: true,
             auth: {
-                user: process.env.SMTP_USER, 
+                user: process.env.SMTP_USER,
                 pass: process.env.SMTP_PASS,
             },
         });

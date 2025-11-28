@@ -1,10 +1,14 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
+import { verifySafeRequest } from "@/lib/secureRoute";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     await connectDB();
+    const notAllowed = verifySafeRequest(req);
+    if (notAllowed) return notAllowed;
+
     const body = await req.json();
     const { uid, email, displayName, photoURL } = body;
 

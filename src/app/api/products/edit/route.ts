@@ -1,10 +1,14 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import Product from "@/models/Product";
 import { connectDB } from "@/lib/mongodb";
+import { verifySafeRequest } from "@/lib/secureRoute";
 
-export async function PUT(req: Request) {
+export async function PUT(req: NextRequest) {
     try {
         await connectDB();
+         const notAllowed = verifySafeRequest(req);
+            if (notAllowed) return notAllowed;
+
         const body = await req.json();
         const { _id, title, description, price, category, image, stock, featured, features, diagrams } = body;
 

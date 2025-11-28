@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Order from "@/models/Order";
 import { verifyFirebaseToken } from "@/lib/verifyToken";
+import { verifySafeRequest } from "@/lib/secureRoute";
 
 // handle POST for creating a new order
 export const POST = async (req: NextRequest) => {
@@ -65,10 +66,14 @@ export async function GET(req: NextRequest) {
   }
 }
 
-//handle PATCH for status update
-export async function PATCH(req: Request) {
+// Handle PATCH for status update
+export async function PATCH(req:NextRequest) {
   await connectDB();
   try {
+
+    const notAllowed = verifySafeRequest(req);
+    if (notAllowed) return notAllowed;
+
     const { orderId, status } = await req.json();
     const updatedOrder = await Order.findOneAndUpdate({ orderID: orderId }, { status }, { new: true });
     return NextResponse.json(updatedOrder);
