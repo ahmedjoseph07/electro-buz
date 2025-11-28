@@ -1,4 +1,3 @@
-// src/lib/secureRequest.ts
 import { NextRequest, NextResponse } from "next/server";
 
 export function verifySafeRequest(req: NextRequest) {
@@ -8,30 +7,20 @@ export function verifySafeRequest(req: NextRequest) {
 
   const allowedOrigins = [
     "http://localhost:3000",
-    "https://electrobuz.com",
     "https://www.electrobuz.com",
+    "https://electrobuz.com",
   ];
 
-  // Handle CORS preflight requests
-  if (req.method === "OPTIONS") {
-    const res = NextResponse.json({}, { status: 200 });
-    if (origin && allowedOrigins.includes(origin)) {
-      res.headers.set("Access-Control-Allow-Origin", origin);
-      res.headers.set("Access-Control-Allow-Methods", "GET,POST,PATCH,DELETE,OPTIONS");
-      res.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    }
-    return res;
-  }
-
-  // Allow same-origin (no origin header)
+  // Allow same-origin requests (no Origin header)
   if (!origin) {
+    // But if it's a GET & direct browser visit (navigate), block
     if (req.method === "GET" && fetchMode !== "cors" && !acceptHeader.includes("application/json")) {
       return NextResponse.redirect(new URL("/", req.url));
     }
-    return null;
+    return null; 
   }
 
-  // Block unknown origins
+  // Block requests from unknown origins
   if (!allowedOrigins.includes(origin)) {
     return NextResponse.json(
       { success: false, message: "Unauthorized origin" },
@@ -39,7 +28,7 @@ export function verifySafeRequest(req: NextRequest) {
     );
   }
 
-  // Block direct browser visits / Postman
+  // Block direct browser visits and Postman (fetch-mode check)
   if (fetchMode && fetchMode !== "cors") {
     return NextResponse.json(
       { success: false, message: "Forbidden access" },
@@ -47,10 +36,5 @@ export function verifySafeRequest(req: NextRequest) {
     );
   }
 
-  // Add CORS headers for allowed origin
-  const res = NextResponse.next();
-  res.headers.set("Access-Control-Allow-Origin", origin);
-  res.headers.set("Access-Control-Allow-Methods", "GET,POST,PATCH,DELETE,OPTIONS");
-  res.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  return res;
+  return null;
 }
