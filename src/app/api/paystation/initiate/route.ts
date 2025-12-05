@@ -41,10 +41,17 @@ export async function POST(req: NextRequest) {
             }),
         };
 
+        const params = new URLSearchParams(
+            Object.entries(payload).reduce((acc, [key, value]) => {
+                if (value !== undefined && value !== null) acc[key] = String(value);
+                return acc;
+            }, {} as Record<string, string>)
+        );
+
         // Initiate Payment API 
         const response = await fetch("https://api.paystation.com.bd/initiate-payment", {
             method: "POST",
-            body: new URLSearchParams(payload as any),
+            body: params,
         });
 
         const data = await response.json();

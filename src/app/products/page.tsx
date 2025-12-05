@@ -17,7 +17,6 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 
-import axiosInstance from "@/lib/axiosInstance";
 import axios from "axios";
 
 export default function Products() {

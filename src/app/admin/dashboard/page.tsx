@@ -156,7 +156,7 @@ export default function AdminDashboard() {
         });
 
         return () => unsubscribe();
-    }, [refreshKey]);
+    }, [refreshKey,auth]);
 
     // Sales & Category Data
     useEffect(() => {
@@ -180,7 +180,7 @@ export default function AdminDashboard() {
         });
 
         return () => unsubscribe();
-    }, [refreshKey]);
+    }, [refreshKey,auth]);
 
     // Orders Data
     useEffect(() => {
@@ -225,7 +225,7 @@ export default function AdminDashboard() {
 
         // Cleanup listener on unmount
         return () => unsubscribe();
-    }, []);
+    }, [auth]);
 
     // Role Check
     useEffect(() => {
