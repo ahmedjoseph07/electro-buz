@@ -21,30 +21,19 @@ import {
     Mail,
     Phone,
     MapPin,
+    Wallet,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 import { jsPDF } from "jspdf";
 
 import { OrderItem } from "@/models/Order";
+import { generateInvoice, OrderForInvoice } from "@/lib/generateInvoice";
 
 interface CheckoutModalProps {
     isOpen: boolean;
     onClose: () => void;
 }
-
-interface OrderForInvoice {
-    _id: string;
-    items: OrderItem[];
-    total: number;
-    customer: {
-        name: string;
-        email?: string;
-        phone?: string;
-        address?: string;
-    };
-}
-
 
 
 export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
@@ -52,7 +41,9 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
     const total = items.reduce((sum, it) => sum + it.price * it.quantity, 0);
     const dispatch = useAppDispatch();
 
-    const [loading, setLoading] = useState(false);
+    const [loadingCOD, setLoadingCOD] = useState(false);
+    const [loadingOnline, setLoadingOnline] = useState(false);
+
     const [customer, setCustomer] = useState({
         name: "",
         email: "",
@@ -60,89 +51,8 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
         address: "",
     });
 
-    const generateInvoice = (order: OrderForInvoice) => {
-        const doc = new jsPDF();
-
-        // --- Header ---
-        doc.setFontSize(22);
-        doc.setTextColor(10, 10, 10);
-        doc.text("ElectroBuz", 105, 15, { align: "center" });
-
-        doc.setFontSize(14);
-        doc.setTextColor(100);
-        doc.text("Invoice", 105, 22, { align: "center" });
-
-        // --- Order & Customer Info Box ---
-        doc.setDrawColor(0);
-        doc.setFillColor(240, 240, 240);
-        doc.rect(15, 30, 180, 40, "F"); // light grey box
-
-        doc.setTextColor(0);
-        doc.setFontSize(12);
-        doc.text(`Order ID: ${order._id}`, 20, 38);
-        doc.text(`Date: ${new Date().toLocaleDateString()}`, 150, 38);
-
-        doc.text(`Name: ${order.customer.name || "-"}`, 20, 45);
-        if (order.customer.email) doc.text(`Email: ${order.customer.email}`, 20, 52);
-        if (order.customer.phone) doc.text(`Phone: ${order.customer.phone}`, 20, 59);
-        if (order.customer.address) doc.text(`Address: ${order.customer.address}`, 20, 66);
-
-        // --- Items Table Header ---
-        const startY = 80;
-        doc.setFillColor(200, 230, 255); // light cyan
-        doc.rect(15, startY, 180, 8, "F");
-
-        doc.setFontSize(12);
-        doc.setTextColor(0);
-        doc.text("No.", 18, startY + 6);
-        doc.text("Item", 32, startY + 6);
-        doc.text("Qty", 135, startY + 6);
-        doc.text("Price", 158, startY + 6);
-        doc.text("Total", 190, startY + 6, { align: "right" });
-
-        // --- Items ---
-        let y = startY + 14;
-        order.items.forEach((item: OrderItem, idx: number) => {
-            // Item number
-            doc.text(`${idx + 1}`, 18, y);
-
-            // Item title (wrap if long)
-            doc.text(item.title, 32, y, { maxWidth: 95 });
-
-            // Quantity
-            doc.text(`${item.quantity}`, 135, y);
-
-            // Unit price
-            doc.text(`${item.price.toFixed(2)}`, 158, y);
-
-            // Total price (right-aligned)
-            doc.text(`${(item.price * item.quantity).toFixed(2)}`, 190, y, { align: "right" });
-
-            y += 8;
-        });
-
-        // --- Total Box ---
-        y += 5;
-        doc.setDrawColor(0);
-        doc.setFillColor(240, 240, 240);
-        doc.rect(120, y, 75, 10, "F");
-        doc.setFontSize(12);
-        doc.setTextColor(0);
-        doc.text(`Total:${order.total.toFixed(2)}`, 190, y + 7, { align: "right" });
-
-        // --- Footer ---
-        doc.setFontSize(10);
-        doc.setTextColor(100);
-        doc.text("Thank you for shopping with ElectroBuz!", 105, 290, { align: "center" });
-        doc.text("This is a system generated invoice.", 105, 295, { align: "center" });
-
-        // --- Save PDF ---
-        doc.save(`invoice_${order._id}.pdf`);
-    };
-
-
     const handlePlaceOrder = async () => {
-        setLoading(true);
+        setLoadingCOD(true);
         try {
             const res = await fetch("/api/orders", {
                 method: "POST",
@@ -158,16 +68,46 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
             });
             dispatch(clearCart());
             onClose();
-
-            // Generate Invoice
-            if (data.order) generateInvoice(data.order);
+            
+            if (data.order) generateInvoice(data.order); // Generate Invoice
         } catch (err) {
             console.error(err);
             toast.warning("Failed to place order.", {
                 icon: <XCircle className="text-red-500 w-5 h-5" />,
             });
         } finally {
-            setLoading(false);
+            setLoadingCOD(false);
+        }
+    };
+
+    const handlePayOnline = async () => {
+        if (!customer.name || !customer.phone || !customer.address) {
+            toast.warning("Please fill out your details before proceeding.");
+            return;
+        }
+
+        setLoadingOnline(true);
+        try {
+            const res = await fetch("/api/paystation/initiate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ items,total, customer }),
+            });
+
+            const data = await res.json();
+            console.log(data)
+
+            if (data?.payment_url) {
+                window.location.href = data.payment_url;
+            } else {
+                toast.error("Failed to initiate payment.");
+            }
+
+        } catch (err) {
+            console.error(err);
+            toast.error("Error connecting to payment gateway.");
+        } finally {
+            setLoadingOnline(true);
         }
     };
 
@@ -176,7 +116,7 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
             <DialogContent className="w-full max-w-lg sm:max-w-md p-4 sm:p-6">
                 <DialogHeader>
                     <DialogTitle className="text-start text-2xl font-bold text-gray-800">
-                        Checkout — <span className="text-cyan-500">COD Only</span>
+                        Confirm Your Order
                     </DialogTitle>
                 </DialogHeader>
 
@@ -259,24 +199,28 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
 
                     {/* Total */}
                     <div className="mt-4 font-semibold text-center sm:text-left">
-                        Total: ৳{total.toFixed(2)} (Cash on Delivery)
+                        Total Payable: &#2547;{total.toFixed(2)}
                     </div>
 
                     {/* Buttons */}
                     <div className="flex flex-col sm:flex-row gap-2 mt-2 w-full">
                         <Button
-                            className="flex-1 flex items-center justify-center gap-2"
-                            disabled={loading}
-                            onClick={handlePlaceOrder}
-                        >
-                            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><ShoppingBag className="w-4 h-4" /> Confirm Order</>}
-                        </Button>
-                        <Button
-                            onClick={onClose}
                             variant="neutral"
                             className="flex-1 flex items-center justify-center gap-2"
+                            disabled={loadingCOD || loadingOnline}
+                            onClick={handlePlaceOrder}
                         >
-                            <X className="w-4 h-4" /> Cancel
+                            {loadingCOD ? <Loader2 className="w-4 h-4 animate-spin" /> : <>
+                                <ShoppingBag className="w-4 h-4" /> Cash on Delivery
+                            </>}
+                        </Button>
+
+                        <Button
+                            className="flex-1 flex items-center justify-center gap-2 "
+                            disabled={loadingCOD || loadingOnline}
+                            onClick={handlePayOnline}
+                        >
+                            {loadingOnline ? <Loader2 className="w-4 h-4 animate-spin" /> : <> <Wallet /> Pay Online</>}
                         </Button>
                     </div>
 

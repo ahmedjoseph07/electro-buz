@@ -364,7 +364,6 @@ export default function AdminDashboard() {
         }
     };
 
-
     const openEdit = (product: ProductState) => {
         setSelectedProduct({
             ...product,

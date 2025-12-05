@@ -8,6 +8,10 @@ import { verifySafeRequest } from "@/lib/secureRoute";
 export const POST = async (req: NextRequest) => {
   try {
     await connectDB();
+    
+     const notAllowed = verifySafeRequest(req);
+    if (notAllowed) return notAllowed;
+
     const body = await req.json();
 
     const { items, total, customer } = body;
