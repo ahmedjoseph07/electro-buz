@@ -28,7 +28,6 @@ import { ProductDoc } from "@/models/Product";
 import Loader from "@/components/ui/loader";
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { AlertDialogCancel } from "@radix-ui/react-alert-dialog";
-import axios from "axios";
 import axiosInstance from "@/lib/axiosInstance";
 import { onAuthStateChanged, getAuth } from "firebase/auth";
 
