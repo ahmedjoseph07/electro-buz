@@ -46,7 +46,6 @@ interface ProductState {
     diagramsInput: string;
 }
 
-
 interface User {
     _id: string;
     displayName?: string;
@@ -80,7 +79,6 @@ interface Order {
 interface SalesData { month: string; sales: number; }
 interface CategoryData { category: string; stock: number; }
 
-
 export default function AdminDashboard() {
     const [loading, setLoading] = useState(true);
     const { user } = useAppSelector((s) => s.auth);
@@ -88,7 +86,6 @@ export default function AdminDashboard() {
     const [orderFilter, setOrderFilter] = useState("all");
     const router = useRouter();
     const [openAddModal, setOpenAddModal] = useState(false);
-
 
     // Analytics Data States
     const [refreshKey, setRefreshKey] = useState(0);
