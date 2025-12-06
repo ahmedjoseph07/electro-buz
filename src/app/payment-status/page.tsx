@@ -18,6 +18,7 @@ interface OrderForInvoice {
         phone?: string;
         address?: string;
     };
+    orderID: string;
 }
 
 export default function PaymentStatus() {
