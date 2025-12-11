@@ -5,7 +5,7 @@ import { verifyFirebaseToken } from "@/lib/verifyToken";
 
 export const GET = async (
   req: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context: { params: { slug: string } }
 ): Promise<NextResponse> => {
   try {
     await connectDB();
@@ -13,8 +13,9 @@ export const GET = async (
     const { valid, message } = await verifyFirebaseToken(req);
     if (!valid) return NextResponse.json({ success: false, message: message! }, { status: 401 });
 
-    const { id } = await context.params;
-    const product = await Product.findById(id).lean<ProductDoc & { _id: string }>();
+    const { slug } = context.params; 
+
+    const product = await Product.findOne({ slug }).lean();
 
     if (!product) {
       return NextResponse.json({ message: "Product not found" }, { status: 404 });

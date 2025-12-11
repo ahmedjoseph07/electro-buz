@@ -90,13 +90,13 @@ export default function Products() {
 
       <div className="flex flex-col sm:flex-row gap-4 mb-6 w-full max-w-7xl justify-between items-center">
         {/* Search */}
-        <div className="relative w-full sm:w-1/2">
+        <div className="relative rounded-2xl w-full sm:w-1/2">
           <input
             type="text"
             placeholder="Search products..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-10 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            className="w-full border rounded-lg px-10 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
           />
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
             <Search />
@@ -181,13 +181,13 @@ export default function Products() {
             return (
               <Card
                 key={p._id}
-                onClick={() => router.push(`/products/${p._id}`)}
+                onClick={() => router.push(`/products/${p.slug}`)}
                 className="group transition-all duration-300 
                 hover:-translate-x-1 hover:translate-y-1 hover:shadow-lg 
                 rounded-2xl pt-0 flex flex-col justify-between aspect-square cursor-pointer"
               >
                 {/* Image*/}
-                <div className="overflow-hidden flex justify-center items-center h-1/2">
+                <div className="overflow-hidden flex justify-center items-center h-52">
                   <Image
                     width={300}
                     height={300}
@@ -214,7 +214,7 @@ export default function Products() {
                     </CardDescription>
                   </CardHeader>
 
-                  <CardContent className="flex w-full mt-4 px-4 pb-4">
+                  <CardContent className="flex w-full px-4 ">
                     <div
                       className="flex flex-col sm:flex-row gap-4 mt-2"
                       onClick={(e) => e.stopPropagation()}
@@ -266,6 +266,7 @@ export default function Products() {
                     </div>
                   </CardContent>
                 </div>
+
               </Card>
             );
           })

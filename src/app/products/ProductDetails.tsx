@@ -16,6 +16,7 @@ import axios from "axios";
 interface ProductDoc {
   _id: string;
   title: string;
+  slug: string;
   description: string;
   price: number;
   image?: string;
@@ -52,9 +53,9 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
       try {
         const res = await axios.get("/api/products");
         const data: ProductDoc[] = res.data.data;
-
         const productsState: ProductDoc[] = data.map((p) => ({
           _id: p._id,
+          slug: p.slug,
           title: p.title,
           description: p.description,
           price: p.price,
@@ -105,7 +106,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 
   // Filter similar category products
   const similarProducts = allProducts.filter(
-    (p) => p.category === product.category && p._id !== product._id
+    (p) => p.category === product.category && p.slug !== product.slug
   );
 
   const serializeProduct = (p: ProductDoc) => ({
@@ -148,7 +149,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
             <HoverCard key={p._id}>
               <HoverCardTrigger asChild>
                 <Link
-                  href={`/products/${p._id}`}
+                  href={`/products/${p.slug}`}
                   className="flex flex-col items-center border border-cyan-500 rounded-xl p-4 transition-all duration-300"
                 >
                   <div className="w-40 h-40 relative">
@@ -184,8 +185,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                 <div className="flex flex-col gap-4 max-h-[400px] overflow-y-auto border border-cyan-500 rounded-2xl p-2">
                   {similarProducts.map((p) => (
                     <Link
-                      key={p._id}
-                      href={`/products/${p._id}`}
+                      key={p._id} href={`/products/${p.slug}`}
                       className="flex items-center gap-3 p-3 border rounded-lg transition-all duration-300 hover:shadow-md"
                     >
                       <div className="overflow-hidden w-20 h-20 rounded-md bg-gray-100 flex-shrink-0 flex justify-center items-center">

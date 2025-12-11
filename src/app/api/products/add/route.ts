@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Product from "@/models/Product";
 import { connectDB } from "@/lib/mongodb";
 import { verifySafeRequest } from "@/lib/secureRoute";
+import slugify from "slugify";
 
 export async function POST(req: NextRequest) {
   try {
@@ -31,8 +32,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    //Generating a slug from title
+    let slug = slugify(title, { lower: true, strict: true });
+
+    // Ensuring slug uniqueness
+    const slugExists = await Product.findOne({ slug });
+    if (slugExists) {
+      slug = `${slug}-${Date.now()}`; // add timestamp if duplicate
+    }
+
     const newProduct = await Product.create({
       title,
+      slug, 
       description,
       price,
       image,
@@ -43,6 +54,7 @@ export async function POST(req: NextRequest) {
       diagrams: Array.isArray(diagrams) ? diagrams : [],
     });
 
+    console.log(newProduct)
     return NextResponse.json(
       { message: "Product added successfully", product: newProduct },
       { status: 201 }

@@ -22,6 +22,7 @@ import axios from "axios";
 
 interface Product {
     _id: string;
+    slug:string;
     title: string;
     description: string;
     price: number;
@@ -65,9 +66,6 @@ const Featured = () => {
         (p) => p.category?.toLowerCase() === activeCategory.toLowerCase()
     );
 
-
-
-
     return (
         <section className="py-14 bg-gray-50">
             <h2 className="text-3xl font-bold text-center mb-4">
@@ -110,7 +108,7 @@ const Featured = () => {
                                 {filteredProducts.length > 0 ? (
                                     filteredProducts.map((item) => (
                                         <Card
-                                            onClick={() => router.push(`/products/${item._id}`)}
+                                            onClick={() => router.push(`/products/${item.slug}`)}
                                             key={item._id}
                                             className="group cursor-pointer text-center border-2 transition-all duration-300 hover:translate-y-1 hover:-translate-x-1 hover:shadow-lg"
                                         >

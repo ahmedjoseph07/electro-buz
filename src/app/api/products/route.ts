@@ -10,8 +10,12 @@ export async function GET(req: NextRequest) {
     const notAllowed = verifySafeRequest(req);
     if (notAllowed) return notAllowed;
 
-    const products = await Product.find();
-    return NextResponse.json({ success: true, data: products }, { status: 200 });
+    const products = await Product.find({}, null, { lean: true });
+
+    return NextResponse.json(
+      { success: true, data: products },
+      { status: 200 }
+    );
   } catch (error: unknown) {
     const errMsg = error instanceof Error ? error.message : "Unknown error";
     console.error("GET /products error:", errMsg);

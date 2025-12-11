@@ -3,13 +3,14 @@ import Product, { ProductDoc } from "@/models/Product";
 import ProductDetails from "../ProductDetails";
 
 interface ProductPageProps {
-  params: { id: string };
+  params: { slug: string };
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
   await connectDB();
 
-  const product = (await Product.findById(params.id).lean()) as ProductDoc | null;
+  // Loading product by slug instead of by ID
+  const product = (await Product.findOne({ slug: params.slug }).lean()) as ProductDoc | null;
 
   if (!product) {
     return (
@@ -19,6 +20,5 @@ export default async function ProductPage({ params }: ProductPageProps) {
     );
   }
 
-  // Convert ObjectId to string for the client component
   return <ProductDetails product={{ ...product, _id: product._id.toString() }} />;
 }
