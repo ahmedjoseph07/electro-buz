@@ -12,6 +12,9 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/h
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import Lightbox from "yet-another-react-lightbox";
+import Zoom from "yet-another-react-lightbox/plugins/zoom";
+import "yet-another-react-lightbox/styles.css";
 
 interface ProductDoc {
   _id: string;
@@ -45,6 +48,8 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
   const [allProducts, setAllProducts] = useState<ProductDoc[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [open, setOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => setIsClient(true), []);
 
@@ -306,7 +311,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
               <TabsList className="flex justify-center sm:gap-4 md:gap-10 border-b pb-2">
                 <TabsTrigger className="cursor-pointer" value="spec">Specs</TabsTrigger>
                 <TabsTrigger className="cursor-pointer" value="diagrams">Diagrams</TabsTrigger>
-                <TabsTrigger className="cursor-pointer" value="reviews">Reviews</TabsTrigger>
+                {/* <TabsTrigger className="cursor-pointer" value="reviews">Reviews</TabsTrigger> */}
               </TabsList>
 
               {/* Specs */}
@@ -345,7 +350,11 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                     {product.diagrams.map((imgUrl, i) => (
                       <div
                         key={i}
-                        className="border border-cyan-300 rounded-xl p-3 bg-gray-50 shadow-sm hover:shadow-md transition-all duration-300"
+                        onClick={() => {
+                          setActiveIndex(i);
+                          setOpen(true);
+                        }}
+                        className="border cursor-pointer border-cyan-300 rounded-xl p-3 bg-gray-50 shadow-sm hover:shadow-md transition-all duration-300"
                       >
                         <div className="relative w-full h-64">
                           <Image
@@ -360,15 +369,23 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                         </p>
                       </div>
                     ))}
+                    <Lightbox
+                      open={open}
+                      close={() => setOpen(false)}
+                      index={activeIndex}
+                      slides={product.diagrams?.map((imgUrl) => ({ src: imgUrl })) || []}
+                      plugins={[Zoom]}
+                    />
                   </div>
+
                 ) : (
                   <p className="text-gray-600 italic">No diagrams available for this product.</p>
                 )}
               </TabsContent>
 
-              <TabsContent value="reviews" className="pt-6 text-gray-700">
+              {/* <TabsContent value="reviews" className="pt-6 text-gray-700">
                 <p>Reviews + Comments</p>
-              </TabsContent>
+              </TabsContent> */}
             </Tabs>
           </div>
         </>
